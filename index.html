@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Class 7 Math Test: Real-Time Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f3f4f6; user-select: none; }
+        .camera-feed { width: 160px; height: 120px; background-color: #000; border-radius: 8px; object-fit: cover; border: 2px solid #ef4444; transform: scaleX(-1); }
+        .recording-dot { width: 12px; height: 12px; background-color: #ef4444; border-radius: 50%; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+        .hidden-page { display: none !important; }
+        .question-card { transition: all 0.2s; }
+        .question-card:hover { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        
+        /* Admin Table Styles */
+        .admin-table-row { transition: background-color 0.3s ease; }
+        .new-row-animation { animation: highlightNew 2s ease-out; }
+        @keyframes highlightNew {
+            0% { background-color: #dcfce7; }
+            100% { background-color: transparent; }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col">
+
+    <!-- HEADER -->
+    <header class="fixed top-0 w-full bg-white shadow-md z-50 h-20">
+        <div class="container mx-auto px-4 h-full flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="bg-blue-600 text-white p-2 rounded-lg"><i class="fas fa-graduation-cap text-xl"></i></div>
+                <div><h1 class="text-lg font-bold text-gray-800">Class 7 Mathematics</h1><p class="text-xs text-gray-500">Real-Time Exam Portal</p></div>
+            </div>
+
+            <!-- Timer -->
+            <div id="timer-container" class="hidden flex flex-col items-center bg-gray-100 px-4 py-1 rounded-lg border border-gray-300">
+                <span class="text-xs text-gray-500 uppercase font-semibold">Time Remaining</span>
+                <div id="timer" class="text-xl font-mono font-bold text-blue-700">01:00:00</div>
+            </div>
+
+            <!-- Camera -->
+            <div class="relative group" id="camera-container">
+                <video id="webcam" class="camera-feed" autoplay playsinline muted></video>
+                <div class="absolute top-2 right-2 flex items-center gap-1 bg-black/60 px-2 py-0.5 rounded-full backdrop-blur-sm">
+                    <div class="recording-dot"></div><span class="text-[10px] text-white font-medium">REC</span>
+                </div>
+            </div>
+            
+            <!-- Admin Header Elements (Hidden by default) -->
+            <div id="admin-header-controls" class="hidden">
+                 <button onclick="logoutAdmin()" class="text-red-600 font-bold hover:text-red-800 text-sm">Logout Admin</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main class="container mx-auto px-4 pt-24 pb-12 max-w-4xl flex-grow">
+
+        <!-- 1. INTRO / LOGIN PAGE -->
+        <div id="intro-page" class="bg-white rounded-xl shadow-lg p-8 animate-fade-in">
+            <div class="text-center mb-8">
+                <h2 class="text-3xl font-bold text-gray-800 mb-2">Number Play Assessment</h2>
+                <p class="text-gray-600">Please enter your details to begin.</p>
+            </div>
+
+            <div class="max-w-md mx-auto bg-gray-50 p-6 rounded-lg border border-gray-200 mb-6">
+                <label class="block text-gray-700 text-sm font-bold mb-2">Student Name</label>
+                <input type="text" id="student-name" class="shadow appearance-none border rounded w-full py-3 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter your full name">
+                <p class="text-xs text-gray-500 mt-2"><i class="fas fa-lock mr-1"></i> Your result will be automatically sent to the instructor.</p>
+            </div>
+
+            <button onclick="startTest()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl shadow-lg transition text-lg flex items-center justify-center gap-2">
+                <i class="fas fa-play"></i> Start Assessment
+            </button>
+        </div>
+
+        <!-- 2. TEST FORM -->
+        <form id="test-form" class="hidden-page space-y-8" onsubmit="event.preventDefault(); submitTest();">
+            <!-- Sections injected by JS -->
+            <div id="questions-container" class="space-y-8"></div>
+            
+            <div class="flex justify-end pt-4 pb-12">
+                <button type="submit" id="submit-btn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-lg shadow-lg flex items-center gap-2 text-lg">
+                    <i class="fas fa-paper-plane"></i> Submit Test
+                </button>
+            </div>
+        </form>
+
+        <!-- 3. STUDENT RESULTS PAGE -->
+        <div id="results-page" class="hidden-page animate-fade-in">
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden mb-8">
+                <div class="bg-blue-600 p-8 text-center text-white">
+                    <h2 class="text-3xl font-bold mb-2">Test Submitted!</h2>
+                    <p class="opacity-90">Your score has been recorded.</p>
+                </div>
+                <div class="p-8 text-center">
+                    <div class="inline-block p-6 bg-gray-50 rounded-lg border border-gray-200">
+                        <p class="text-gray-500 text-sm uppercase font-semibold">Your Score</p>
+                        <div class="text-5xl font-bold text-blue-600 mt-2 mb-1">
+                            <span id="display-score">0</span><span class="text-2xl text-gray-400">/16</span>
+                        </div>
+                    </div>
+                    <div class="mt-8">
+                        <button onclick="toggleSolutions()" class="text-blue-600 hover:underline font-semibold">View Detailed Solutions</button>
+                    </div>
+                </div>
+            </div>
+            <div id="solutions-container" class="hidden space-y-6 pb-12"></div>
+        </div>
+
+        <!-- 4. ADMIN DASHBOARD (Protected) -->
+        <div id="admin-dashboard" class="hidden-page animate-fade-in">
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                <div class="bg-gray-800 p-6 flex justify-between items-center text-white">
+                    <div>
+                        <h2 class="text-2xl font-bold"><i class="fas fa-user-shield mr-2"></i>Admin Dashboard</h2>
+                        <p class="text-gray-400 text-sm">Live Student Submissions</p>
+                    </div>
+                    <div class="bg-green-500 px-3 py-1 rounded-full text-xs font-bold animate-pulse">
+                        <i class="fas fa-wifi mr-1"></i> LIVE
+                    </div>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-gray-100 text-gray-600 uppercase text-xs leading-normal">
+                                <th class="py-3 px-6 text-left">Time</th>
+                                <th class="py-3 px-6 text-left">Student Name</th>
+                                <th class="py-3 px-6 text-center">Score</th>
+                                <th class="py-3 px-6 text-center">Time Taken</th>
+                                <th class="py-3 px-6 text-center">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-table-body" class="text-gray-600 text-sm font-light">
+                            <!-- Rows injected by Firestore -->
+                            <tr id="waiting-row">
+                                <td colspan="5" class="py-8 text-center text-gray-400 italic">Waiting for submissions...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-white border-t mt-auto py-6">
+        <div class="container mx-auto px-4 flex justify-between items-center text-xs text-gray-500">
+            <p>&copy; 2025 Class 7 Mathematics Dept.</p>
+            <button onclick="showAdminLogin()" class="hover:text-gray-800">Admin Login</button>
+        </div>
+    </footer>
+
+    <!-- FIREBASE MODULE -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // 1. SETUP FIREBASE
+        const firebaseConfig = JSON.parse(__firebase_config);
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const COLLECTION_NAME = 'exam_submissions_v2'; 
+
+        // 2. AUTHENTICATION
+        let currentUser = null;
+
+        const initAuth = async () => {
+            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                await signInWithCustomToken(auth, __initial_auth_token);
+            } else {
+                await signInAnonymously(auth);
+            }
+        };
+        initAuth();
+
+        onAuthStateChanged(auth, (user) => {
+            currentUser = user;
+            if (user) {
+                console.log("Connected to Cloud Database as:", user.uid);
+                // Check if we are already in Admin Mode? (Local state only for demo)
+            }
+        });
+
+        // 3. EXPORT FUNCTIONS TO GLOBAL SCOPE
+        window.db = db;
+        window.collection = collection;
+        window.addDoc = addDoc;
+        window.onSnapshot = onSnapshot;
+        window.query = query;
+        window.orderBy = orderBy;
+        window.serverTimestamp = serverTimestamp;
+        window.appId = appId;
+        window.COLLECTION_NAME = COLLECTION_NAME;
+        window.currentUser = currentUser; // Reference
+    </script>
+
+    <!-- APP LOGIC -->
+    <script>
+        // --- DATA & CONTENT ---
+        const testData = {
+            sectionA: [
+                { id: 'q1', q: "Which of the following statements about parity is correct?", opts: ["Sum of 3 odd numbers is even", "Sum of 2 consecutive integers is always odd", "Product of 2 odd numbers is even", "Sum of 2 even numbers is odd"], correct: 1, exp: "Parity Rule: Even + Odd = Odd." },
+                { id: 'q2', q: "In the Virahāńka-Fibonacci sequence (1, 2, 3, 5, 8...), what is the next number after 8?", opts: ["10", "11", "12", "13"], correct: 3, exp: "5 + 8 = 13." },
+                { id: 'q3', q: "In a 3x3 Magic Square using numbers 1 to 9, what number must be in the center?", opts: ["1", "9", "5", "15"], correct: 2, exp: "The median of 1-9 is 5." },
+                { id: 'q4', q: "Consider 3n + 4. If n = 3, what is the parity?", opts: ["Odd", "Even", "Prime", "Negative"], correct: 0, exp: "3(3)+4 = 13 (Odd)." },
+                { id: 'q5', q: "In K2 + K2 = HMM, what is M?", opts: ["2", "4", "6", "8"], correct: 1, exp: "2+2=4." }
+            ],
+            sectionB: [
+                { id: 'q6', type: 'text', q: "Sum of an even number of odd numbers is always _________.", ans: "even", exp: "Pairs of odds make evens." },
+                { id: 'q7', type: 'text', q: "Magic sum of a 3x3 magic square (1-9) is _________.", ans: "15", exp: "45 / 3 = 15." },
+                { id: 'q8', type: 'select', q: "True/False: 2n can be odd.", opts: ["True", "False"], ans: "False", exp: "2n is always even." },
+                { id: 'q9', type: 'text', q: "Indian scholar (c. 700 CE) who wrote about 1, 2, 3, 5... was _________.", ans: "virahanka", exp: "Virahāńka." },
+                { id: 'q10', type: 'select', q: "Adding 1 to a magic square makes it _________ a magic square.", opts: ["Still", "Not"], ans: "Still", exp: "Relationships hold." }
+            ],
+            sectionC: [
+                { id: 'q11', q: "Martin and Maria are born 1 year apart. Can sum of ages be 112? Why?", keys: ["no", "impossible", "odd", "even"], min: 2, exp: "No. Sum of consecutive integers (Even+Odd) is always Odd. 112 is Even." },
+                { id: 'q12', q: "Parity of squares in 27 x 13 grid?", keys: ["odd", "product", "multiply"], min: 1, exp: "Odd. Odd x Odd = Odd." },
+                { id: 'q13', q: "Angaan climbs 4 steps (1 or 2 at a time). How many ways?", keys: ["5", "five", "ways"], min: 1, exp: "5 Ways (1, 2, 3, 5 sequence)." }
+            ],
+            sectionD: [
+                { id: 'q14', q: "Why can't 9 be in the center of a 1-9 Magic Square?", exp: "Sum must be 15. If 9 is center, neighbors must sum to 6. Logic fails." },
+                { id: 'q15', q: "Solve K2 + K2 = HMM. Find K, H, M.", exp: "M=4, H=1, K=7." }
+            ]
+        };
+
+        let timerInterval, startTime;
+        let studentName = "";
+        let finalScore = 0;
+        let sectionCDetails = [];
+
+        // --- CAMERA ---
+        window.onload = function() {
+            navigator.mediaDevices.getUserMedia({ video: true })
+            .then(s => document.getElementById('webcam').srcObject = s)
+            .catch(e => console.log("Cam Access Denied"));
+        };
+
+        // --- NAVIGATION & LOGIC ---
+
+        function startTest() {
+            const nameInput = document.getElementById('student-name');
+            if(!nameInput.value.trim()) {
+                alert("Please enter your name to continue.");
+                return;
+            }
+            studentName = nameInput.value.trim();
+
+            document.getElementById('intro-page').classList.add('hidden-page');
+            document.getElementById('test-form').classList.remove('hidden-page');
+            document.getElementById('timer-container').classList.remove('hidden');
+
+            renderTest();
+            startTime = new Date();
+            
+            // Timer
+            let time = 3600;
+            timerInterval = setInterval(() => {
+                time--;
+                const h = Math.floor(time/3600), m = Math.floor((time%3600)/60), s = time%60;
+                document.getElementById('timer').innerText = `${h}:${m<10?'0':''}${m}:${s<10?'0':''}${s}`;
+                if(time<=0) submitTest();
+            }, 1000);
+            window.scrollTo(0,0);
+        }
+
+        function renderTest() {
+            const container = document.getElementById('questions-container');
+            let html = '';
+
+            // Section A
+            html += `<div class="bg-white rounded-xl shadow p-6"><h3 class="font-bold border-b pb-2 mb-4">Section A: MCQ (1 Mark)</h3>`;
+            testData.sectionA.forEach((q, i) => {
+                html += `<div class="mb-6 question-card p-2 rounded"><p class="font-semibold mb-2">Q${i+1}. ${q.q}</p>${q.opts.map((o, idx) => `<label class="block ml-2 cursor-pointer"><input type="radio" name="${q.id}" value="${idx}" class="mr-2">${o}</label>`).join('')}</div>`;
+            });
+            html += `</div>`;
+
+            // Section B
+            html += `<div class="bg-white rounded-xl shadow p-6"><h3 class="font-bold border-b pb-2 mb-4">Section B: Fill in Blanks (1 Mark)</h3>`;
+            testData.sectionB.forEach((q, i) => {
+                html += `<div class="mb-4 question-card p-2 rounded"><p class="font-semibold">Q${i+6}. ${q.q}</p>`;
+                if(q.type==='text') html += `<input type="text" name="${q.id}" class="border p-1 w-full mt-1 rounded bg-gray-50" placeholder="Answer...">`;
+                else html += `<div class="flex gap-4 mt-1">${q.opts.map(o=>`<label><input type="radio" name="${q.id}" value="${o}" class="mr-1">${o}</label>`).join('')}</div>`;
+                html += `</div>`;
+            });
+            html += `</div>`;
+
+            // Section C
+            html += `<div class="bg-white rounded-xl shadow p-6"><h3 class="font-bold border-b pb-2 mb-4 text-blue-700">Section C: Short Answer (2 Marks - Auto Graded)</h3>`;
+            testData.sectionC.forEach((q, i) => {
+                html += `<div class="mb-6 question-card p-2 rounded"><p class="font-semibold mb-2">Q${i+11}. ${q.q}</p><textarea name="${q.id}" rows="2" class="w-full border p-2 rounded bg-gray-50" placeholder="Type answer..."></textarea></div>`;
+            });
+            html += `</div>`;
+
+            // Section D
+            html += `<div class="bg-white rounded-xl shadow p-6"><h3 class="font-bold border-b pb-2 mb-4 text-purple-700">Section D: Long Answer (Self-Review)</h3>`;
+            testData.sectionD.forEach((q, i) => {
+                html += `<div class="mb-6 question-card p-2 rounded"><p class="font-semibold mb-2">Q${i+14}. ${q.q}</p><textarea name="${q.id}" rows="4" class="w-full border p-2 rounded bg-gray-50" placeholder="Solution..."></textarea></div>`;
+            });
+            html += `</div>`;
+
+            container.innerHTML = html;
+        }
+
+        async function submitTest() {
+            clearInterval(timerInterval);
+            document.getElementById('submit-btn').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
+            
+            const form = new FormData(document.getElementById('test-form'));
+            let score = 0;
+            const maxScore = 16; // 5 + 5 + 6
+
+            // Grading Logic
+            testData.sectionA.forEach(q => { if(parseInt(form.get(q.id)) === q.correct) score++; });
+            testData.sectionB.forEach(q => { if((form.get(q.id)||"").toLowerCase().trim() === q.ans.toLowerCase()) score++; });
+            
+            testData.sectionC.forEach(q => {
+                const ans = (form.get(q.id)||"").toLowerCase();
+                const hits = q.keys.filter(k => ans.includes(k));
+                let pts = 0;
+                if(hits.length >= q.min) pts = 2;
+                else if(hits.length > 0) pts = 1;
+                score += pts;
+                sectionCDetails.push({id:q.id, pts, hits});
+            });
+            finalScore = score;
+
+            // Time Calculation
+            const endTime = new Date();
+            const timeDiff = Math.floor((endTime - startTime)/1000);
+            const timeStr = `${Math.floor(timeDiff/60)}m ${timeDiff%60}s`;
+
+            // --- FIREBASE WRITE ---
+            try {
+                // Ensure db globals are ready (from module script)
+                if(window.addDoc && window.db) {
+                    const colRef = window.collection(window.db, 'artifacts', window.appId, 'public', 'data', window.COLLECTION_NAME);
+                    await window.addDoc(colRef, {
+                        name: studentName,
+                        score: score,
+                        maxScore: maxScore,
+                        timeTaken: timeStr,
+                        timestamp: window.serverTimestamp() // Server time for accurate ordering
+                    });
+                    console.log("Score submitted to Admin Dashboard.");
+                } else {
+                    console.error("Firebase not initialized yet.");
+                }
+            } catch (err) {
+                console.error("Submission Error:", err);
+                alert("Connection error. But your local score is saved.");
+            }
+
+            // UI Update
+            document.getElementById('display-score').innerText = score;
+            document.getElementById('test-form').classList.add('hidden-page');
+            document.getElementById('timer-container').classList.add('hidden');
+            document.getElementById('results-page').classList.remove('hidden-page');
+            
+            buildSolutions(form);
+            window.scrollTo(0,0);
+        }
+
+        function buildSolutions(form) {
+            const container = document.getElementById('solutions-container');
+            let html = `<h3 class="font-bold text-xl border-b pb-2">Detailed Report</h3>`;
+            
+            const row = (q, u, c, pts, max) => `
+                <div class="bg-gray-50 p-4 rounded border mb-2 ${pts===max?'border-green-200':(pts>0?'border-yellow-200':'border-red-200')}">
+                    <p class="font-semibold text-sm text-gray-800">${q}</p>
+                    <div class="text-xs mt-2 grid grid-cols-2 gap-2">
+                        <div><span class="font-bold text-gray-500">You:</span> ${u}</div>
+                        <div><span class="font-bold text-green-600">Correct:</span> ${c}</div>
+                    </div>
+                    <div class="text-right text-xs font-bold mt-1">Score: ${pts}/${max}</div>
+                </div>`;
+
+            // A
+            html += `<h4 class="mt-4 font-bold text-sm text-gray-500">Section A</h4>`;
+            testData.sectionA.forEach((q,i) => {
+                const val = form.get(q.id);
+                const pts = parseInt(val) === q.correct ? 1 : 0;
+                html += row(`Q${i+1}`, val ? q.opts[val] : "-", q.opts[q.correct], pts, 1);
+            });
+
+            // B
+            html += `<h4 class="mt-4 font-bold text-sm text-gray-500">Section B</h4>`;
+            testData.sectionB.forEach((q,i) => {
+                const val = form.get(q.id)||"";
+                const pts = val.toLowerCase().trim() === q.ans.toLowerCase() ? 1 : 0;
+                html += row(`Q${i+6}`, val, q.ans, pts, 1);
+            });
+
+             // C
+            html += `<h4 class="mt-4 font-bold text-sm text-gray-500">Section C (AI Graded)</h4>`;
+            testData.sectionC.forEach((q,i) => {
+                const res = sectionCDetails.find(r=>r.id===q.id);
+                html += row(`Q${i+11}`, form.get(q.id)||"No Answer", q.exp, res.pts, 2);
+            });
+
+            container.innerHTML = html;
+        }
+
+        function toggleSolutions() {
+            document.getElementById('solutions-container').classList.remove('hidden');
+        }
+
+        // --- ADMIN LOGIC ---
+
+        function showAdminLogin() {
+            const pwd = prompt("Enter Admin Password:");
+            if(pwd === "admin123") {
+                launchAdminDashboard();
+            } else if (pwd !== null) {
+                alert("Incorrect Password");
+            }
+        }
+
+        function launchAdminDashboard() {
+            // Hide Student UI
+            document.getElementById('intro-page').classList.add('hidden-page');
+            document.getElementById('test-form').classList.add('hidden-page');
+            document.getElementById('results-page').classList.add('hidden-page');
+            document.getElementById('timer-container').classList.add('hidden');
+            document.getElementById('camera-container').classList.add('hidden');
+            
+            // Show Admin UI
+            document.getElementById('admin-dashboard').classList.remove('hidden-page');
+            document.getElementById('admin-header-controls').classList.remove('hidden');
+
+            startListeningToSubmissions();
+        }
+
+        function logoutAdmin() {
+            location.reload(); // Simple logout
+        }
+
+        function startListeningToSubmissions() {
+            // Use the globals exported from module
+            const colRef = window.collection(window.db, 'artifacts', window.appId, 'public', 'data', window.COLLECTION_NAME);
+            const q = window.query(colRef, window.orderBy('timestamp', 'desc'));
+
+            window.onSnapshot(q, (snapshot) => {
+                const tbody = document.getElementById('admin-table-body');
+                
+                // Clear initial waiting message if data exists
+                if(!snapshot.empty) {
+                    const waitingRow = document.getElementById('waiting-row');
+                    if(waitingRow) waitingRow.remove();
+                }
+
+                // We'll rebuild the table or prepend new ones. 
+                // For simplicity, let's rebuild to keep sorting perfect.
+                tbody.innerHTML = ''; 
+
+                if (snapshot.empty) {
+                     tbody.innerHTML = `<tr id="waiting-row"><td colspan="5" class="py-8 text-center text-gray-400 italic">No submissions yet...</td></tr>`;
+                     return;
+                }
+
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    const dateObj = data.timestamp ? data.timestamp.toDate() : new Date();
+                    const timeString = dateObj.toLocaleTimeString();
+
+                    const tr = document.createElement('tr');
+                    tr.className = "border-b border-gray-200 hover:bg-gray-50 admin-table-row";
+                    // Add animation class if this doc was added very recently (last 2 seconds)
+                    const isNew = (new Date() - dateObj) < 5000; 
+                    if(isNew) tr.classList.add('new-row-animation');
+
+                    tr.innerHTML = `
+                        <td class="py-3 px-6 text-left whitespace-nowrap font-mono text-xs">${timeString}</td>
+                        <td class="py-3 px-6 text-left font-semibold text-gray-700">${data.name || 'Anonymous'}</td>
+                        <td class="py-3 px-6 text-center"><span class="bg-blue-200 text-blue-800 py-1 px-3 rounded-full text-xs font-bold">${data.score}/${data.maxScore}</span></td>
+                        <td class="py-3 px-6 text-center text-gray-600">${data.timeTaken}</td>
+                        <td class="py-3 px-6 text-center"><span class="text-green-600 font-bold text-xs"><i class="fas fa-check-circle"></i> Submitted</span></td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }, (error) => {
+                console.error("Admin Listener Error:", error);
+                const tbody = document.getElementById('admin-table-body');
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center text-red-500 py-4">Error connecting to live feed. Check console.</td></tr>`;
+            });
+        }
+    </script>
+</body>
+</html>
