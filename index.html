@@ -3,19 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Class 7 Math Test: Complete System</title>
+    <title>Class 7 Math Test: Fixed System</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f3f4f6; user-select: none; }
-        .camera-feed { width: 160px; height: 120px; background-color: #000; border-radius: 8px; object-fit: cover; border: 2px solid #ef4444; transform: scaleX(-1); }
+        
+        /* Camera Styles */
+        .camera-feed { 
+            width: 160px; height: 120px; 
+            background-color: #000; 
+            border-radius: 8px; 
+            object-fit: cover; 
+            border: 2px solid #ef4444; 
+            transform: scaleX(-1); 
+            display: none; /* Hidden until active */
+        }
+        .camera-placeholder {
+            width: 160px; height: 120px;
+            background-color: #1f2937;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6b7280;
+            font-size: 0.8rem;
+            border: 2px dashed #374151;
+        }
+        
         .recording-dot { width: 12px; height: 12px; background-color: #ef4444; border-radius: 50%; animation: pulse 1.5s infinite; }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+        
         .hidden-page { display: none !important; }
         .question-card { transition: all 0.2s; }
         .question-card:hover { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
-        
-        /* New Row Animation */
         .new-row { animation: flashGreen 2s ease-out; }
         @keyframes flashGreen { 0% { background-color: #dcfce7; } 100% { background-color: transparent; } }
     </style>
@@ -27,7 +48,7 @@
         <div class="container mx-auto px-4 h-full flex justify-between items-center">
             <div class="flex items-center gap-3">
                 <div class="bg-blue-600 text-white p-2 rounded-lg"><i class="fas fa-graduation-cap text-xl"></i></div>
-                <div><h1 class="text-lg font-bold text-gray-800">Class 7 Mathematics</h1><p class="text-xs text-gray-500">Exam Portal & Admin System</p></div>
+                <div><h1 class="text-lg font-bold text-gray-800">Class 7 Mathematics</h1><p class="text-xs text-gray-500">Exam Portal</p></div>
             </div>
 
             <div id="timer-container" class="hidden flex flex-col items-center bg-gray-100 px-4 py-1 rounded-lg border border-gray-300">
@@ -35,15 +56,20 @@
                 <div id="timer" class="text-xl font-mono font-bold text-blue-700">01:00:00</div>
             </div>
 
-            <div class="relative group" id="camera-container">
+            <!-- Camera Widget in Header -->
+            <div class="relative group" id="header-camera-widget">
+                <div id="cam-placeholder" class="camera-placeholder flex-col">
+                    <i class="fas fa-video-slash mb-1"></i>
+                    <span>Camera Off</span>
+                </div>
                 <video id="webcam" class="camera-feed" autoplay playsinline muted></video>
-                <div class="absolute top-2 right-2 flex items-center gap-1 bg-black/60 px-2 py-0.5 rounded-full backdrop-blur-sm">
+                <div id="rec-indicator" class="hidden absolute top-2 right-2 flex items-center gap-1 bg-black/60 px-2 py-0.5 rounded-full backdrop-blur-sm">
                     <div class="recording-dot"></div><span class="text-[10px] text-white font-medium">REC</span>
                 </div>
             </div>
             
             <div id="admin-controls" class="hidden">
-                 <button onclick="window.location.reload()" class="text-red-600 font-bold hover:text-red-800 text-sm border border-red-200 px-3 py-1 rounded">Logout</button>
+                 <button onclick="location.reload()" class="text-red-600 font-bold hover:text-red-800 text-sm border border-red-200 px-3 py-1 rounded">Logout</button>
             </div>
         </div>
     </header>
@@ -51,22 +77,52 @@
     <!-- MAIN CONTENT -->
     <main class="container mx-auto px-4 pt-24 pb-12 max-w-4xl flex-grow">
 
-        <!-- 1. INTRO / LOGIN -->
+        <!-- 1. INTRO / SETUP PAGE -->
         <div id="intro-page" class="bg-white rounded-xl shadow-lg p-8 animate-fade-in">
-            <div class="text-center mb-8">
+            <div class="text-center mb-6">
                 <h2 class="text-3xl font-bold text-gray-800 mb-2">Number Play Assessment</h2>
-                <p class="text-gray-600">Enter your name to begin the test.</p>
-                <p id="db-status" class="text-xs text-orange-500 mt-2 font-mono"><i class="fas fa-circle-notch fa-spin"></i> Connecting to Cloud System...</p>
+                <p class="text-gray-600">System Check & Setup</p>
             </div>
 
-            <div class="max-w-md mx-auto bg-gray-50 p-6 rounded-lg border border-gray-200 mb-6">
-                <label class="block text-gray-700 text-sm font-bold mb-2">Student Name</label>
-                <input type="text" id="student-name" class="shadow appearance-none border rounded w-full py-3 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter your full name">
+            <div class="grid md:grid-cols-2 gap-6 mb-6">
+                <!-- Step 1: Identity -->
+                <div class="bg-gray-50 p-6 rounded-lg border border-gray-200">
+                    <h3 class="font-bold text-gray-700 mb-4">1. Student Details</h3>
+                    <input type="text" id="student-name" class="shadow appearance-none border rounded w-full py-3 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter your full name">
+                </div>
+
+                <!-- Step 2: System Check -->
+                <div class="bg-gray-50 p-6 rounded-lg border border-gray-200">
+                    <h3 class="font-bold text-gray-700 mb-4">2. System Status</h3>
+                    
+                    <!-- Cloud Status -->
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="text-sm text-gray-600">Cloud Database:</span>
+                        <span id="db-status" class="text-sm font-bold text-orange-500"><i class="fas fa-circle-notch fa-spin mr-1"></i> Connecting...</span>
+                    </div>
+
+                    <!-- Camera Status -->
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="text-sm text-gray-600">Camera Permission:</span>
+                        <span id="cam-status" class="text-sm font-bold text-red-500"><i class="fas fa-times-circle mr-1"></i> Not Started</span>
+                    </div>
+
+                    <button onclick="initCamera()" id="cam-btn" class="w-full bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 rounded text-sm transition">
+                        <i class="fas fa-video mr-2"></i> Initialize Camera
+                    </button>
+                </div>
             </div>
 
+            <!-- Start Button -->
             <button onclick="startTest()" id="start-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl shadow-lg transition text-lg flex items-center justify-center gap-2 opacity-50 cursor-not-allowed" disabled>
                 <i class="fas fa-play"></i> Start Assessment
             </button>
+
+            <!-- Offline Fallback -->
+            <div id="offline-option" class="hidden text-center mt-4">
+                <p class="text-xs text-red-500 mb-2">Taking too long to connect?</p>
+                <button onclick="enableOfflineMode()" class="text-gray-600 underline text-sm hover:text-gray-800">Continue in Offline Mode</button>
+            </div>
         </div>
 
         <!-- 2. TEST FORM -->
@@ -84,7 +140,7 @@
             <div class="bg-white rounded-xl shadow-lg overflow-hidden mb-8">
                 <div class="bg-blue-600 p-8 text-center text-white">
                     <h2 class="text-3xl font-bold mb-2">Test Submitted!</h2>
-                    <p class="opacity-90">Your results have been sent to the admin.</p>
+                    <p class="opacity-90" id="submission-msg">Your results are recorded.</p>
                 </div>
                 <div class="p-8 text-center">
                     <div class="inline-block p-6 bg-gray-50 rounded-lg border border-gray-200">
@@ -94,7 +150,7 @@
                         </div>
                     </div>
                     <div class="mt-8">
-                        <button onclick="toggleSolutions()" class="text-blue-600 hover:underline font-semibold text-lg"><i class="fas fa-eye mr-2"></i>View Detailed Solutions</button>
+                        <button onclick="toggleSolutions()" class="bg-white border border-blue-600 text-blue-600 hover:bg-blue-50 font-bold py-2 px-6 rounded-lg transition"><i class="fas fa-eye mr-2"></i>Review Solutions</button>
                     </div>
                 </div>
             </div>
@@ -111,21 +167,21 @@
                     </div>
                     <div class="flex items-center gap-2">
                          <span class="w-3 h-3 bg-green-500 rounded-full animate-pulse"></span>
-                         <span class="text-xs font-bold text-green-400">LIVE SYNC</span>
+                         <span class="text-xs font-bold text-green-400">LIVE</span>
                     </div>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
                         <thead>
                             <tr class="bg-gray-100 text-gray-600 uppercase text-xs leading-normal border-b">
-                                <th class="py-3 px-6 text-left">Timestamp</th>
-                                <th class="py-3 px-6 text-left">Student Name</th>
+                                <th class="py-3 px-6 text-left">Time</th>
+                                <th class="py-3 px-6 text-left">Student</th>
                                 <th class="py-3 px-6 text-center">Score</th>
-                                <th class="py-3 px-6 text-center">Time Taken</th>
+                                <th class="py-3 px-6 text-center">Status</th>
                             </tr>
                         </thead>
                         <tbody id="admin-table-body" class="text-gray-700 text-sm font-medium">
-                            <tr><td colspan="4" class="text-center py-8 text-gray-400">Waiting for submissions...</td></tr>
+                            <tr><td colspan="4" class="text-center py-8 text-gray-400">Waiting for data...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -147,19 +203,24 @@
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // --- FIREBASE INIT ---
+        // --- FIREBASE SETUP ---
         const firebaseConfig = JSON.parse(__firebase_config);
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const COLLECTION_NAME = 'math_test_submissions_v3';
+        const COLLECTION_NAME = 'math_test_submissions_v4';
 
-        // --- AUTH ---
         let isConnected = false;
-        
+
+        // --- AUTH FLOW ---
         const initAuth = async () => {
             try {
+                // Set a timeout for connection
+                setTimeout(() => {
+                    if (!isConnected) document.getElementById('offline-option').classList.remove('hidden');
+                }, 5000);
+
                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                     await signInWithCustomToken(auth, __initial_auth_token);
                 } else {
@@ -167,8 +228,8 @@
                 }
             } catch (error) {
                 console.error("Auth Error:", error);
-                document.getElementById('db-status').innerText = "Connection Failed. Refresh page.";
-                document.getElementById('db-status').className = "text-xs text-red-500 mt-2 font-bold";
+                document.getElementById('db-status').innerHTML = '<span class="text-red-500">Connection Failed</span>';
+                document.getElementById('offline-option').classList.remove('hidden');
             }
         };
 
@@ -176,27 +237,31 @@
             if (user) {
                 isConnected = true;
                 const status = document.getElementById('db-status');
-                const btn = document.getElementById('start-btn');
                 if(status) {
-                    status.innerHTML = '<i class="fas fa-check-circle"></i> Connected to Cloud.';
-                    status.className = "text-xs text-green-600 mt-2 font-bold";
+                    status.innerHTML = '<span class="text-green-600"><i class="fas fa-check"></i> Connected</span>';
+                    document.getElementById('offline-option').classList.add('hidden');
                 }
-                if(btn) {
-                    btn.disabled = false;
-                    btn.classList.remove('opacity-50', 'cursor-not-allowed');
-                }
+                checkReady();
             }
         });
 
         initAuth();
 
-        // --- GLOBAL EXPORTS FOR HTML BUTTONS ---
-        window.startTest = startTest;
-        window.submitTest = submitTest;
-        window.showAdminLogin = showAdminLogin;
-        window.toggleSolutions = toggleSolutions;
-        
-        // --- TEST DATA ---
+        // --- EXPORT GLOBALS ---
+        window.db = db;
+        window.collection = collection;
+        window.addDoc = addDoc;
+        window.onSnapshot = onSnapshot;
+        window.query = query;
+        window.orderBy = orderBy;
+        window.serverTimestamp = serverTimestamp;
+        window.appId = appId;
+        window.COLLECTION_NAME = COLLECTION_NAME;
+        window.isConnected = () => isConnected;
+    </script>
+
+    <script>
+        // --- DATA ---
         const testData = {
             sectionA: [
                 { id: 'q1', q: "Which of the following statements about parity is correct?", opts: ["Sum of 3 odd numbers is even", "Sum of 2 consecutive integers is always odd", "Product of 2 odd numbers is even", "Sum of 2 even numbers is odd"], correct: 1, exp: "Parity Rule: Even + Odd = Odd." },
@@ -225,11 +290,54 @@
 
         let timerInterval, startTime;
         let studentName = "";
-        let finalScore = 0;
         let sectionCDetails = [];
+        let isCameraReady = false;
+        let offlineMode = false;
 
-        // --- APP LOGIC ---
-        
+        // --- SETUP LOGIC ---
+
+        function initCamera() {
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(s => {
+                    const video = document.getElementById('webcam');
+                    video.srcObject = s;
+                    video.style.display = 'block'; // Show video
+                    document.getElementById('cam-placeholder').style.display = 'none'; // Hide placeholder
+                    document.getElementById('rec-indicator').classList.remove('hidden');
+                    
+                    document.getElementById('cam-status').innerHTML = '<span class="text-green-600"><i class="fas fa-check"></i> Ready</span>';
+                    document.getElementById('cam-btn').innerHTML = '<i class="fas fa-check"></i> Camera Active';
+                    document.getElementById('cam-btn').classList.replace('bg-gray-700', 'bg-green-600');
+                    document.getElementById('cam-btn').disabled = true;
+                    
+                    isCameraReady = true;
+                    checkReady();
+                })
+                .catch(e => {
+                    console.error("Cam Error:", e);
+                    alert("Camera access denied or unavailable. You can still proceed in Offline Mode.");
+                    document.getElementById('cam-status').innerHTML = '<span class="text-red-500">Failed</span>';
+                });
+        }
+
+        function enableOfflineMode() {
+            offlineMode = true;
+            document.getElementById('db-status').innerHTML = '<span class="text-gray-500"><i class="fas fa-ban"></i> Offline Mode</span>';
+            // Bypass checks
+            document.getElementById('start-btn').disabled = false;
+            document.getElementById('start-btn').classList.remove('opacity-50', 'cursor-not-allowed');
+            document.getElementById('start-btn').innerText = "Start Test (Offline)";
+        }
+
+        function checkReady() {
+            // Start button only enabled if (Connected OR Offline) AND (CameraReady OR Offline)
+            if ( (window.isConnected() || offlineMode) && (isCameraReady || offlineMode) ) {
+                const btn = document.getElementById('start-btn');
+                btn.disabled = false;
+                btn.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+        }
+
         function startTest() {
             const nameInput = document.getElementById('student-name');
             if(!nameInput.value.trim()) { alert("Please enter your name."); return; }
@@ -249,54 +357,38 @@
                 document.getElementById('timer').innerText = `${h}:${m<10?'0':''}${m}:${s<10?'0':''}${s}`;
                 if(time<=0) submitTest();
             }, 1000);
-            
-            // Start Cam
-            navigator.mediaDevices.getUserMedia({ video: true })
-                .then(s => document.getElementById('webcam').srcObject = s)
-                .catch(e => console.log("Cam Access Denied"));
         }
 
         function renderQuestions() {
             const container = document.getElementById('questions-container');
             let html = '';
-
             const createCard = (title, content) => `<div class="bg-white rounded-xl shadow p-6 mb-6"><h3 class="font-bold border-b pb-2 mb-4 text-gray-700">${title}</h3>${content}</div>`;
 
-            // Sec A
+            // A
             let contentA = testData.sectionA.map((q, i) => `
-                <div class="mb-6 question-card p-3 rounded hover:bg-gray-50">
+                <div class="mb-6 border-b pb-4 last:border-0">
                     <p class="font-semibold text-gray-800 mb-2">Q${i+1}. ${q.q}</p>
-                    <div class="space-y-1 ml-2">
-                        ${q.opts.map((o, idx) => `<label class="flex items-center cursor-pointer p-1"><input type="radio" name="${q.id}" value="${idx}" class="mr-3 w-4 h-4 text-blue-600">${o}</label>`).join('')}
-                    </div>
+                    <div class="space-y-1">${q.opts.map((o, idx) => `<label class="block cursor-pointer hover:bg-gray-50 p-1 rounded"><input type="radio" name="${q.id}" value="${idx}" class="mr-2">${o}</label>`).join('')}</div>
                 </div>`).join('');
             html += createCard("Section A: MCQ (1 Mark)", contentA);
 
-            // Sec B
+            // B
             let contentB = testData.sectionB.map((q, i) => `
-                <div class="mb-4 question-card p-3 rounded hover:bg-gray-50">
+                <div class="mb-4 border-b pb-4 last:border-0">
                     <p class="font-semibold text-gray-800 mb-2">Q${i+6}. ${q.q}</p>
-                    ${q.type === 'text' 
-                        ? `<input type="text" name="${q.id}" class="border border-gray-300 p-2 w-full rounded focus:ring-2 focus:ring-blue-500" placeholder="Type answer here...">` 
-                        : `<div class="flex gap-4">${q.opts.map(o => `<label class="flex items-center"><input type="radio" name="${q.id}" value="${o}" class="mr-2">${o}</label>`).join('')}</div>`}
+                    ${q.type==='text' ? `<input type="text" name="${q.id}" class="border p-2 w-full rounded bg-gray-50" placeholder="Answer...">` : `<div class="flex gap-4">${q.opts.map(o=>`<label><input type="radio" name="${q.id}" value="${o}" class="mr-1">${o}</label>`).join('')}</div>`}
                 </div>`).join('');
             html += createCard("Section B: Fill in Blanks (1 Mark)", contentB);
 
-            // Sec C
-            let contentC = testData.sectionC.map((q, i) => `
-                <div class="mb-6 question-card p-3 rounded hover:bg-gray-50">
-                    <p class="font-semibold text-gray-800 mb-2">Q${i+11}. ${q.q}</p>
-                    <textarea name="${q.id}" rows="2" class="w-full border border-gray-300 p-2 rounded focus:ring-2 focus:ring-blue-500 bg-gray-50" placeholder="Your answer..."></textarea>
+            // C & D
+            const renderText = (sec, startIdx) => sec.map((q, i) => `
+                <div class="mb-6 border-b pb-4 last:border-0">
+                    <p class="font-semibold text-gray-800 mb-2">Q${i+startIdx}. ${q.q}</p>
+                    <textarea name="${q.id}" rows="3" class="w-full border p-2 rounded bg-gray-50" placeholder="Type Answer..."></textarea>
                 </div>`).join('');
-            html += createCard("Section C: Short Answer (2 Marks - Auto Graded)", contentC);
-
-            // Sec D
-            let contentD = testData.sectionD.map((q, i) => `
-                <div class="mb-6 question-card p-3 rounded hover:bg-gray-50">
-                    <p class="font-semibold text-gray-800 mb-2">Q${i+14}. ${q.q}</p>
-                    <textarea name="${q.id}" rows="4" class="w-full border border-gray-300 p-2 rounded focus:ring-2 focus:ring-purple-500 bg-gray-50" placeholder="Detailed solution..."></textarea>
-                </div>`).join('');
-            html += createCard("Section D: Long Answer (Self-Review)", contentD);
+            
+            html += createCard("Section C: Short Answer (Auto-Graded)", renderText(testData.sectionC, 11));
+            html += createCard("Section D: Long Answer (Self-Review)", renderText(testData.sectionD, 14));
 
             container.innerHTML = html;
         }
@@ -311,41 +403,33 @@
             let score = 0;
             const maxScore = 16;
 
-            // Grading
+            // Grade
             testData.sectionA.forEach(q => { if(parseInt(form.get(q.id)) === q.correct) score++; });
             testData.sectionB.forEach(q => { if((form.get(q.id)||"").toLowerCase().trim() === q.ans.toLowerCase()) score++; });
             testData.sectionC.forEach(q => {
                 const ans = (form.get(q.id)||"").toLowerCase();
                 const hits = q.keys.filter(k => ans.includes(k));
-                let pts = 0;
-                if(hits.length >= q.min) pts = 2; else if(hits.length > 0) pts = 1;
+                let pts = hits.length >= q.min ? 2 : (hits.length > 0 ? 1 : 0);
                 score += pts;
-                sectionCDetails.push({id:q.id, pts, hits});
+                sectionCDetails.push({id:q.id, pts});
             });
 
-            // Timings
-            const endTime = new Date();
-            const timeDiff = Math.floor((endTime - startTime)/1000);
-            const timeStr = `${Math.floor(timeDiff/60)}m ${timeDiff%60}s`;
+            // Time
+            const end = new Date();
+            const diff = Math.floor((end - startTime)/1000);
+            const timeStr = `${Math.floor(diff/60)}m ${diff%60}s`;
 
-            // Firebase Write
-            try {
-                if(!isConnected) throw new Error("Not Connected");
-                const colRef = collection(db, 'artifacts', appId, 'public', 'data', COLLECTION_NAME);
-                await addDoc(colRef, {
-                    name: studentName,
-                    score: score,
-                    maxScore: maxScore,
-                    timeTaken: timeStr,
-                    timestamp: serverTimestamp()
-                });
-                console.log("Success: Score Uploaded");
-            } catch(e) {
-                console.error("Upload Failed", e);
-                alert("Note: Could not upload result to Admin (Offline?), but local results are available.");
+            // Save to DB
+            if (!offlineMode && window.isConnected()) {
+                try {
+                    const colRef = window.collection(window.db, 'artifacts', window.appId, 'public', 'data', window.COLLECTION_NAME);
+                    await window.addDoc(colRef, { name: studentName, score, maxScore, timeTaken: timeStr, timestamp: window.serverTimestamp() });
+                } catch(e) { console.error(e); }
+            } else {
+                document.getElementById('submission-msg').innerText = "Saved locally (Offline Mode)";
             }
 
-            // Display Results
+            // Show Results
             document.getElementById('test-form').classList.add('hidden-page');
             document.getElementById('timer-container').classList.add('hidden');
             document.getElementById('results-page').classList.remove('hidden-page');
@@ -355,58 +439,38 @@
             window.scrollTo(0,0);
         }
 
-        // --- UPDATED REVIEW FUNCTION WITH FULL QUESTION TEXT ---
         function buildSolutions(form) {
             const container = document.getElementById('solutions-container');
             let html = '';
+            
+            const card = (qNum, qText, u, c, pts, max) => `
+            <div class="bg-gray-50 p-4 rounded border mb-4 ${pts===max?'border-green-200':(pts>0?'border-yellow-200':'border-red-200')}">
+                <p class="font-bold text-gray-800 mb-2">${qNum}. ${qText}</p>
+                <div class="grid grid-cols-2 gap-4 text-sm">
+                    <div><span class="block text-xs font-bold text-gray-500">YOUR ANSWER</span><span class="text-gray-800">${u}</span></div>
+                    <div><span class="block text-xs font-bold text-green-600">CORRECT ANSWER</span><span class="text-green-700">${c}</span></div>
+                </div>
+                <div class="text-right mt-2 text-xs font-bold">Score: ${pts}/${max}</div>
+            </div>`;
 
-            const row = (qNum, qText, u, c, pts, max) => `
-                <div class="bg-gray-50 p-5 rounded-lg border mb-4 ${pts===max?'border-green-200':(pts>0?'border-yellow-200':'border-red-200')}">
-                    <p class="font-bold text-gray-800 text-base mb-3 border-b border-gray-200 pb-2">${qNum}. ${qText}</p>
-                    <div class="grid md:grid-cols-2 gap-4 text-sm">
-                        <div class="bg-white p-2 rounded border border-gray-100">
-                            <span class="block text-xs font-bold text-gray-500 uppercase">Your Answer</span>
-                            <span class="text-gray-800 font-medium">${u}</span>
-                        </div>
-                        <div class="bg-green-50 p-2 rounded border border-green-100">
-                            <span class="block text-xs font-bold text-green-600 uppercase">Correct Answer</span>
-                            <span class="text-green-800 font-medium">${c}</span>
-                        </div>
-                    </div>
-                    <div class="mt-3 text-right">
-                        <span class="inline-block px-2 py-1 rounded text-xs font-bold ${pts===max?'bg-green-100 text-green-700':'bg-red-100 text-red-700'}">
-                            Score: ${pts}/${max}
-                        </span>
-                    </div>
-                </div>`;
-
-            // A
-            html += `<h4 class="text-xl font-bold text-gray-700 mt-6 mb-4">Section A</h4>`;
+            html += `<h4 class="font-bold text-lg mt-4 mb-2">Section A</h4>`;
             testData.sectionA.forEach((q,i) => {
                 const val = form.get(q.id);
-                const pts = parseInt(val) === q.correct ? 1 : 0;
-                html += row(`Q${i+1}`, q.q, val ? q.opts[val] : "Not Answered", q.opts[q.correct] + ` <br><em class='text-xs text-gray-500'>(${q.exp})</em>`, pts, 1);
+                const pts = parseInt(val)===q.correct?1:0;
+                html += card(`Q${i+1}`, q.q, val?q.opts[val]:"-", q.opts[q.correct], pts, 1);
             });
 
-            // B
-            html += `<h4 class="text-xl font-bold text-gray-700 mt-6 mb-4">Section B</h4>`;
+            html += `<h4 class="font-bold text-lg mt-4 mb-2">Section B</h4>`;
             testData.sectionB.forEach((q,i) => {
                 const val = form.get(q.id)||"";
-                const pts = val.toLowerCase().trim() === q.ans.toLowerCase() ? 1 : 0;
-                html += row(`Q${i+6}`, q.q, val || "Not Answered", q.ans, pts, 1);
+                const pts = val.toLowerCase().trim()===q.ans.toLowerCase()?1:0;
+                html += card(`Q${i+6}`, q.q, val, q.ans, pts, 1);
             });
 
-             // C
-            html += `<h4 class="text-xl font-bold text-gray-700 mt-6 mb-4">Section C (Auto-Graded)</h4>`;
+            html += `<h4 class="font-bold text-lg mt-4 mb-2">Section C</h4>`;
             testData.sectionC.forEach((q,i) => {
                 const res = sectionCDetails.find(r=>r.id===q.id);
-                html += row(`Q${i+11}`, q.q, form.get(q.id)||"Not Answered", q.exp, res.pts, 2);
-            });
-
-             // D
-            html += `<h4 class="text-xl font-bold text-gray-700 mt-6 mb-4">Section D (Self Review)</h4>`;
-            testData.sectionD.forEach((q,i) => {
-                html += row(`Q${i+14}`, q.q, form.get(q.id)||"Not Answered", q.exp, 0, 4);
+                html += card(`Q${i+11}`, q.q, form.get(q.id)||"No Answer", q.exp, res.pts, 2);
             });
 
             container.innerHTML = html;
@@ -417,49 +481,41 @@
             document.getElementById('solutions-container').scrollIntoView({behavior:'smooth'});
         }
 
-        // --- ADMIN FUNCTIONS ---
+        // --- ADMIN ---
         function showAdminLogin() {
-            const pwd = prompt("Enter Admin Password:");
-            if(pwd === "admin123") launchAdmin();
-            else if(pwd) alert("Wrong Password");
-        }
-
-        function launchAdmin() {
-            document.getElementById('intro-page').classList.add('hidden-page');
-            document.getElementById('test-form').classList.add('hidden-page');
-            document.getElementById('results-page').classList.add('hidden-page');
-            document.getElementById('timer-container').classList.add('hidden');
-            document.getElementById('camera-container').classList.add('hidden');
-            document.getElementById('admin-dashboard').classList.remove('hidden-page');
-            document.getElementById('admin-controls').classList.remove('hidden');
-
-            // Admin Listener
-            const colRef = collection(db, 'artifacts', appId, 'public', 'data', COLLECTION_NAME);
-            const q = query(colRef, orderBy('timestamp', 'desc'));
-
-            onSnapshot(q, (snapshot) => {
-                const tbody = document.getElementById('admin-table-body');
-                if(snapshot.empty) { tbody.innerHTML = `<tr><td colspan="4" class="text-center py-8 text-gray-400">No submissions yet...</td></tr>`; return; }
+            if(prompt("Password:")==="admin123") {
+                document.getElementById('intro-page').classList.add('hidden-page');
+                document.getElementById('admin-dashboard').classList.remove('hidden-page');
+                document.getElementById('admin-controls').classList.remove('hidden');
                 
-                tbody.innerHTML = '';
-                snapshot.forEach(doc => {
-                    const d = doc.data();
-                    const date = d.timestamp ? d.timestamp.toDate() : new Date();
-                    // New row check (within last 3 seconds)
-                    const isNew = (new Date() - date) < 3000;
-                    
-                    const row = `
-                        <tr class="border-b hover:bg-gray-50 transition ${isNew ? 'new-row' : ''}">
-                            <td class="py-3 px-6 text-xs font-mono">${date.toLocaleTimeString()}</td>
-                            <td class="py-3 px-6 font-bold text-gray-700">${d.name}</td>
-                            <td class="py-3 px-6 text-center"><span class="bg-blue-100 text-blue-800 py-1 px-3 rounded-full text-xs font-bold">${d.score}/${d.maxScore}</span></td>
-                            <td class="py-3 px-6 text-center text-gray-500">${d.timeTaken}</td>
-                        </tr>
-                    `;
-                    tbody.innerHTML += row;
+                if(!window.isConnected()) {
+                    document.getElementById('admin-table-body').innerHTML = '<tr><td colspan="4" class="text-center py-4 text-red-500">Offline. Cannot fetch live data.</td></tr>';
+                    return;
+                }
+
+                const col = window.collection(window.db, 'artifacts', window.appId, 'public', 'data', window.COLLECTION_NAME);
+                const q = window.query(col, window.orderBy('timestamp', 'desc'));
+                
+                window.onSnapshot(q, (snap) => {
+                    const tb = document.getElementById('admin-table-body');
+                    if(snap.empty) { tb.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-gray-400">No submissions.</td></tr>'; return; }
+                    tb.innerHTML = '';
+                    snap.forEach(d => {
+                        const data = d.data();
+                        const time = data.timestamp ? data.timestamp.toDate().toLocaleTimeString() : 'Just now';
+                        const isNew = data.timestamp && (new Date() - data.timestamp.toDate() < 5000);
+                        tb.innerHTML += `<tr class="border-b ${isNew?'new-row':''}"><td class="py-3 px-6">${time}</td><td class="py-3 px-6 font-bold">${data.name}</td><td class="py-3 px-6 text-center">${data.score}/${data.maxScore}</td><td class="py-3 px-6 text-center">${data.timeTaken}</td></tr>`;
+                    });
                 });
-            });
+            }
         }
+
+        window.initCamera = initCamera;
+        window.enableOfflineMode = enableOfflineMode;
+        window.startTest = startTest;
+        window.submitTest = submitTest;
+        window.toggleSolutions = toggleSolutions;
+        window.showAdminLogin = showAdminLogin;
     </script>
 </body>
 </html>
