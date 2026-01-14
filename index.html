@@ -3,519 +3,518 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Class 7 Math Test: Fixed System</title>
+    <title>CBSE Class 7 Math: Standard Exam</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f3f4f6; user-select: none; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8fafc; user-select: none; }
         
-        /* Camera Styles */
-        .camera-feed { 
-            width: 160px; height: 120px; 
-            background-color: #000; 
-            border-radius: 8px; 
-            object-fit: cover; 
-            border: 2px solid #ef4444; 
-            transform: scaleX(-1); 
-            display: none; /* Hidden until active */
-        }
-        .camera-placeholder {
-            width: 160px; height: 120px;
-            background-color: #1f2937;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #6b7280;
-            font-size: 0.8rem;
-            border: 2px dashed #374151;
+        /* CBSE Paper Styling */
+        .paper-header { border-bottom: 2px solid #334155; padding-bottom: 1rem; margin-bottom: 2rem; }
+        .section-header { 
+            background: #e2e8f0; color: #1e293b; 
+            padding: 0.5rem 1rem; font-weight: 700; 
+            border-left: 5px solid #3b82f6; margin: 1.5rem 0 1rem 0;
+            text-transform: uppercase; letter-spacing: 0.05em;
         }
         
-        .recording-dot { width: 12px; height: 12px; background-color: #ef4444; border-radius: 50%; animation: pulse 1.5s infinite; }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+        /* Camera UI */
+        .camera-container {
+            width: 140px; height: 105px;
+            background: #000; border: 2px solid #ef4444;
+            border-radius: 6px; overflow: hidden; position: relative;
+        }
+        .camera-feed { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+        .camera-sim {
+            width: 100%; height: 100%; display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            background: #1e293b; color: #94a3b8; font-size: 0.7rem;
+        }
         
         .hidden-page { display: none !important; }
-        .question-card { transition: all 0.2s; }
-        .question-card:hover { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
-        .new-row { animation: flashGreen 2s ease-out; }
-        @keyframes flashGreen { 0% { background-color: #dcfce7; } 100% { background-color: transparent; } }
+        .new-row { animation: flash 2s ease-out; }
+        @keyframes flash { 0% { background-color: #bbf7d0; } 100% { background-color: transparent; } }
     </style>
 </head>
-<body class="bg-gray-100 min-h-screen flex flex-col">
+<body class="bg-slate-50 min-h-screen flex flex-col">
 
     <!-- HEADER -->
-    <header class="fixed top-0 w-full bg-white shadow-md z-50 h-20">
+    <header class="fixed top-0 w-full bg-white shadow-sm z-50 h-16 border-b border-gray-200">
         <div class="container mx-auto px-4 h-full flex justify-between items-center">
             <div class="flex items-center gap-3">
-                <div class="bg-blue-600 text-white p-2 rounded-lg"><i class="fas fa-graduation-cap text-xl"></i></div>
-                <div><h1 class="text-lg font-bold text-gray-800">Class 7 Mathematics</h1><p class="text-xs text-gray-500">Exam Portal</p></div>
+                <img src="https://upload.wikimedia.org/wikipedia/en/thumb/9/95/CBSE_new_logo.svg/1200px-CBSE_new_logo.svg.png" class="h-10 w-auto" alt="CBSE Logo">
+                <div>
+                    <h1 class="text-sm font-bold text-gray-800 uppercase">Class 7 Mathematics</h1>
+                    <p class="text-[10px] text-gray-500 font-medium">Competency Based Assessment</p>
+                </div>
             </div>
 
-            <div id="timer-container" class="hidden flex flex-col items-center bg-gray-100 px-4 py-1 rounded-lg border border-gray-300">
-                <span class="text-xs text-gray-500 uppercase font-semibold">Time Remaining</span>
-                <div id="timer" class="text-xl font-mono font-bold text-blue-700">01:00:00</div>
+            <!-- Timer -->
+            <div id="timer-box" class="hidden bg-slate-100 px-3 py-1 rounded border border-slate-300">
+                <span class="text-[10px] text-gray-500 font-bold block text-center">TIME LEFT</span>
+                <div id="timer-display" class="text-lg font-mono font-bold text-blue-700">60:00</div>
             </div>
 
-            <!-- Camera Widget in Header -->
-            <div class="relative group" id="header-camera-widget">
-                <div id="cam-placeholder" class="camera-placeholder flex-col">
-                    <i class="fas fa-video-slash mb-1"></i>
-                    <span>Camera Off</span>
+            <!-- Cam -->
+            <div class="relative group">
+                <div class="camera-container">
+                    <video id="webcam" class="camera-feed hidden" autoplay playsinline muted></video>
+                    <div id="cam-sim" class="camera-sim">
+                        <i class="fas fa-video-slash mb-1"></i>
+                        <span>AI Proctoring</span>
+                    </div>
                 </div>
-                <video id="webcam" class="camera-feed" autoplay playsinline muted></video>
-                <div id="rec-indicator" class="hidden absolute top-2 right-2 flex items-center gap-1 bg-black/60 px-2 py-0.5 rounded-full backdrop-blur-sm">
-                    <div class="recording-dot"></div><span class="text-[10px] text-white font-medium">REC</span>
-                </div>
+                <div class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
             </div>
             
-            <div id="admin-controls" class="hidden">
-                 <button onclick="location.reload()" class="text-red-600 font-bold hover:text-red-800 text-sm border border-red-200 px-3 py-1 rounded">Logout</button>
+            <div id="admin-logout-btn" class="hidden absolute top-16 right-4">
+                 <button onclick="location.reload()" class="text-xs bg-red-500 text-white px-2 py-1 rounded">Logout</button>
             </div>
         </div>
     </header>
 
-    <!-- MAIN CONTENT -->
+    <!-- MAIN -->
     <main class="container mx-auto px-4 pt-24 pb-12 max-w-4xl flex-grow">
 
-        <!-- 1. INTRO / SETUP PAGE -->
-        <div id="intro-page" class="bg-white rounded-xl shadow-lg p-8 animate-fade-in">
+        <!-- 1. LOGIN -->
+        <div id="page-login" class="bg-white p-8 rounded-lg shadow-lg border border-gray-200 max-w-lg mx-auto mt-10">
             <div class="text-center mb-6">
-                <h2 class="text-3xl font-bold text-gray-800 mb-2">Number Play Assessment</h2>
-                <p class="text-gray-600">System Check & Setup</p>
+                <h2 class="text-2xl font-bold text-gray-800">Periodic Test: Number Play</h2>
+                <p class="text-gray-500 text-sm mt-1">Based on New CBSE/NCERT Curriculum</p>
             </div>
-
-            <div class="grid md:grid-cols-2 gap-6 mb-6">
-                <!-- Step 1: Identity -->
-                <div class="bg-gray-50 p-6 rounded-lg border border-gray-200">
-                    <h3 class="font-bold text-gray-700 mb-4">1. Student Details</h3>
-                    <input type="text" id="student-name" class="shadow appearance-none border rounded w-full py-3 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter your full name">
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-gray-600 uppercase mb-1">Candidate Name</label>
+                    <input type="text" id="student-name" class="w-full p-3 border rounded-md focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Enter Name">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-600 uppercase mb-1">Roll Number</label>
+                    <input type="text" class="w-full p-3 border rounded-md focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Enter Roll No">
+                </div>
+                
+                <div class="bg-blue-50 p-3 rounded text-xs text-blue-800">
+                    <strong>Instructions:</strong>
+                    <ul class="list-disc ml-4 mt-1 space-y-1">
+                        <li>The question paper contains 4 sections: A, B, C, D.</li>
+                        <li>Section A: MCQs & Assertion-Reasoning (1 mark each).</li>
+                        <li>Section B: Competency/Case-Study (4 marks).</li>
+                        <li>Section C & D: Short & Long Answer (Subjective).</li>
+                    </ul>
                 </div>
 
-                <!-- Step 2: System Check -->
-                <div class="bg-gray-50 p-6 rounded-lg border border-gray-200">
-                    <h3 class="font-bold text-gray-700 mb-4">2. System Status</h3>
-                    
-                    <!-- Cloud Status -->
-                    <div class="flex items-center justify-between mb-4">
-                        <span class="text-sm text-gray-600">Cloud Database:</span>
-                        <span id="db-status" class="text-sm font-bold text-orange-500"><i class="fas fa-circle-notch fa-spin mr-1"></i> Connecting...</span>
-                    </div>
-
-                    <!-- Camera Status -->
-                    <div class="flex items-center justify-between mb-4">
-                        <span class="text-sm text-gray-600">Camera Permission:</span>
-                        <span id="cam-status" class="text-sm font-bold text-red-500"><i class="fas fa-times-circle mr-1"></i> Not Started</span>
-                    </div>
-
-                    <button onclick="initCamera()" id="cam-btn" class="w-full bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 rounded text-sm transition">
-                        <i class="fas fa-video mr-2"></i> Initialize Camera
-                    </button>
-                </div>
-            </div>
-
-            <!-- Start Button -->
-            <button onclick="startTest()" id="start-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl shadow-lg transition text-lg flex items-center justify-center gap-2 opacity-50 cursor-not-allowed" disabled>
-                <i class="fas fa-play"></i> Start Assessment
-            </button>
-
-            <!-- Offline Fallback -->
-            <div id="offline-option" class="hidden text-center mt-4">
-                <p class="text-xs text-red-500 mb-2">Taking too long to connect?</p>
-                <button onclick="enableOfflineMode()" class="text-gray-600 underline text-sm hover:text-gray-800">Continue in Offline Mode</button>
+                <button onclick="startTest()" class="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-3 rounded-md transition shadow-md">
+                    Proceed to Test
+                </button>
             </div>
         </div>
 
-        <!-- 2. TEST FORM -->
-        <form id="test-form" class="hidden-page space-y-8">
-            <div id="questions-container" class="space-y-8"></div>
-            <div class="flex justify-end pt-4 pb-12">
-                <button type="button" onclick="submitTest()" id="submit-btn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-lg shadow-lg flex items-center gap-2 text-lg">
-                    <i class="fas fa-paper-plane"></i> Submit Test
+        <!-- 2. TEST PAPER -->
+        <form id="page-test" class="hidden-page">
+            
+            <!-- Paper Header -->
+            <div class="paper-header text-center">
+                <h2 class="text-xl font-bold text-gray-900">MATHEMATICS (041)</h2>
+                <p class="text-sm text-gray-600">Class VII | Max Marks: 20 | Time: 1 Hour</p>
+                <div class="flex justify-center gap-4 text-xs font-bold mt-2 text-gray-500">
+                    <span>SECTION A (5M)</span>
+                    <span>SECTION B (4M)</span>
+                    <span>SECTION C (6M)</span>
+                    <span>SECTION D (5M)</span>
+                </div>
+            </div>
+
+            <!-- Questions Container -->
+            <div id="questions-wrapper"></div>
+
+            <div class="flex justify-end mt-8 pt-6 border-t">
+                <button type="button" onclick="submitTest()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-10 rounded shadow-lg text-lg">
+                    Submit Answer Sheet
                 </button>
             </div>
         </form>
 
-        <!-- 3. RESULTS PAGE -->
-        <div id="results-page" class="hidden-page animate-fade-in">
-            <div class="bg-white rounded-xl shadow-lg overflow-hidden mb-8">
-                <div class="bg-blue-600 p-8 text-center text-white">
-                    <h2 class="text-3xl font-bold mb-2">Test Submitted!</h2>
-                    <p class="opacity-90" id="submission-msg">Your results are recorded.</p>
+        <!-- 3. RESULT -->
+        <div id="page-result" class="hidden-page max-w-2xl mx-auto">
+            <div class="bg-white rounded-lg shadow-xl overflow-hidden">
+                <div class="bg-slate-800 p-6 text-center text-white">
+                    <h2 class="text-2xl font-bold">Submission Confirmed</h2>
+                    <p class="text-sm opacity-80 mt-1">Your response has been recorded in the local database.</p>
                 </div>
                 <div class="p-8 text-center">
-                    <div class="inline-block p-6 bg-gray-50 rounded-lg border border-gray-200">
-                        <p class="text-gray-500 text-sm uppercase font-semibold">Your Score</p>
-                        <div class="text-5xl font-bold text-blue-600 mt-2 mb-1">
-                            <span id="display-score">0</span><span class="text-2xl text-gray-400">/16</span>
-                        </div>
+                    <div class="text-6xl font-black text-blue-600 mb-2">
+                        <span id="res-score">0</span><span class="text-2xl text-gray-400">/20</span>
                     </div>
-                    <div class="mt-8">
-                        <button onclick="toggleSolutions()" class="bg-white border border-blue-600 text-blue-600 hover:bg-blue-50 font-bold py-2 px-6 rounded-lg transition"><i class="fas fa-eye mr-2"></i>Review Solutions</button>
+                    <p class="text-gray-500 text-sm font-medium mb-6">Total Marks Obtained</p>
+                    
+                    <div class="bg-gray-100 p-4 rounded-lg font-mono text-sm text-gray-600 mb-6 select-all cursor-pointer" onclick="copyCode(this)">
+                        Code: <span id="res-code" class="font-bold text-black">---</span>
                     </div>
+
+                    <button onclick="toggleSolutions()" class="text-blue-600 hover:underline font-bold text-sm">
+                        View Detailed Answer Key
+                    </button>
                 </div>
             </div>
-            <div id="solutions-container" class="hidden space-y-6 pb-12"></div>
+            <div id="solutions-area" class="hidden mt-8 space-y-4"></div>
         </div>
 
         <!-- 4. ADMIN DASHBOARD -->
-        <div id="admin-dashboard" class="hidden-page animate-fade-in">
-            <div class="bg-white rounded-xl shadow-lg overflow-hidden min-h-[500px]">
-                <div class="bg-gray-800 p-6 flex justify-between items-center text-white">
-                    <div>
-                        <h2 class="text-2xl font-bold"><i class="fas fa-user-shield mr-2"></i>Admin Dashboard</h2>
-                        <p class="text-gray-400 text-sm">Real-Time Exam Monitor</p>
-                    </div>
-                    <div class="flex items-center gap-2">
-                         <span class="w-3 h-3 bg-green-500 rounded-full animate-pulse"></span>
-                         <span class="text-xs font-bold text-green-400">LIVE</span>
-                    </div>
+        <div id="page-admin" class="hidden-page">
+            <div class="bg-white rounded-xl shadow-lg border min-h-[600px] flex flex-col">
+                <div class="bg-gray-900 text-white p-4 flex justify-between items-center">
+                    <h2 class="font-bold text-lg"><i class="fas fa-chalkboard-teacher mr-2"></i>Teacher Dashboard</h2>
+                    <span class="text-xs bg-green-600 px-2 py-1 rounded">Live Sync</span>
                 </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="bg-gray-100 text-gray-600 uppercase text-xs leading-normal border-b">
-                                <th class="py-3 px-6 text-left">Time</th>
-                                <th class="py-3 px-6 text-left">Student</th>
-                                <th class="py-3 px-6 text-center">Score</th>
-                                <th class="py-3 px-6 text-center">Status</th>
+                
+                <!-- Manual Fetch -->
+                <div class="p-4 bg-gray-50 border-b flex gap-2">
+                    <input type="text" id="manual-code" placeholder="Enter Result Code (e.g. CBSE-15-X9Y)" class="flex-grow p-2 border rounded text-sm uppercase font-mono">
+                    <button onclick="manualFetch()" class="bg-gray-700 text-white px-4 py-2 rounded text-sm font-bold">Search</button>
+                </div>
+
+                <div class="overflow-auto flex-grow">
+                    <table class="w-full text-left">
+                        <thead class="bg-gray-100 text-gray-500 text-xs uppercase font-bold">
+                            <tr>
+                                <th class="p-4">Time</th>
+                                <th class="p-4">Student</th>
+                                <th class="p-4 text-center">Marks</th>
+                                <th class="p-4 text-right">Code</th>
                             </tr>
                         </thead>
-                        <tbody id="admin-table-body" class="text-gray-700 text-sm font-medium">
-                            <tr><td colspan="4" class="text-center py-8 text-gray-400">Waiting for data...</td></tr>
-                        </tbody>
+                        <tbody id="admin-tbody" class="text-sm text-gray-700"></tbody>
                     </table>
+                    <div id="admin-empty" class="text-center py-12 text-gray-400">No submissions yet...</div>
                 </div>
             </div>
         </div>
 
     </main>
 
-    <footer class="bg-white border-t mt-auto py-6">
-        <div class="container mx-auto px-4 flex justify-between items-center text-xs text-gray-500">
-            <p>&copy; 2025 Class 7 Mathematics Dept.</p>
-            <button onclick="showAdminLogin()" class="hover:text-gray-800 underline">Admin Login</button>
+    <!-- FOOTER -->
+    <footer class="bg-white border-t py-4 mt-auto">
+        <div class="container mx-auto px-4 flex justify-between items-center text-xs text-gray-400">
+            <p>CBSE Assessment Portal v2.0</p>
+            <button onclick="adminLogin()" class="font-bold hover:text-gray-800">Teacher Login</button>
         </div>
     </footer>
 
-    <!-- LOGIC SCRIPT -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        // --- FIREBASE SETUP ---
-        const firebaseConfig = JSON.parse(__firebase_config);
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const COLLECTION_NAME = 'math_test_submissions_v4';
-
-        let isConnected = false;
-
-        // --- AUTH FLOW ---
-        const initAuth = async () => {
-            try {
-                // Set a timeout for connection
-                setTimeout(() => {
-                    if (!isConnected) document.getElementById('offline-option').classList.remove('hidden');
-                }, 5000);
-
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
-                }
-            } catch (error) {
-                console.error("Auth Error:", error);
-                document.getElementById('db-status').innerHTML = '<span class="text-red-500">Connection Failed</span>';
-                document.getElementById('offline-option').classList.remove('hidden');
-            }
-        };
-
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                isConnected = true;
-                const status = document.getElementById('db-status');
-                if(status) {
-                    status.innerHTML = '<span class="text-green-600"><i class="fas fa-check"></i> Connected</span>';
-                    document.getElementById('offline-option').classList.add('hidden');
-                }
-                checkReady();
-            }
-        });
-
-        initAuth();
-
-        // --- EXPORT GLOBALS ---
-        window.db = db;
-        window.collection = collection;
-        window.addDoc = addDoc;
-        window.onSnapshot = onSnapshot;
-        window.query = query;
-        window.orderBy = orderBy;
-        window.serverTimestamp = serverTimestamp;
-        window.appId = appId;
-        window.COLLECTION_NAME = COLLECTION_NAME;
-        window.isConnected = () => isConnected;
-    </script>
-
     <script>
-        // --- DATA ---
-        const testData = {
-            sectionA: [
-                { id: 'q1', q: "Which of the following statements about parity is correct?", opts: ["Sum of 3 odd numbers is even", "Sum of 2 consecutive integers is always odd", "Product of 2 odd numbers is even", "Sum of 2 even numbers is odd"], correct: 1, exp: "Parity Rule: Even + Odd = Odd." },
-                { id: 'q2', q: "In the Virahāńka-Fibonacci sequence (1, 2, 3, 5, 8...), what is the next number after 8?", opts: ["10", "11", "12", "13"], correct: 3, exp: "5 + 8 = 13." },
-                { id: 'q3', q: "In a 3x3 Magic Square using numbers 1 to 9, what number must be in the center?", opts: ["1", "9", "5", "15"], correct: 2, exp: "The median of 1-9 is 5." },
-                { id: 'q4', q: "Consider 3n + 4. If n = 3, what is the parity?", opts: ["Odd", "Even", "Prime", "Negative"], correct: 0, exp: "3(3)+4 = 13 (Odd)." },
-                { id: 'q5', q: "In K2 + K2 = HMM, what is M?", opts: ["2", "4", "6", "8"], correct: 1, exp: "2+2=4." }
-            ],
-            sectionB: [
-                { id: 'q6', type: 'text', q: "Sum of an even number of odd numbers is always _________.", ans: "even", exp: "Pairs of odds make evens." },
-                { id: 'q7', type: 'text', q: "Magic sum of a 3x3 magic square (1-9) is _________.", ans: "15", exp: "45 / 3 = 15." },
-                { id: 'q8', type: 'select', q: "True/False: 2n can be odd.", opts: ["True", "False"], ans: "False", exp: "2n is always even." },
-                { id: 'q9', type: 'text', q: "Indian scholar (c. 700 CE) who wrote about 1, 2, 3, 5... was _________.", ans: "virahanka", exp: "Virahāńka." },
-                { id: 'q10', type: 'select', q: "Adding 1 to a magic square makes it _________ a magic square.", opts: ["Still", "Not"], ans: "Still", exp: "Relationships hold." }
-            ],
-            sectionC: [
-                { id: 'q11', q: "Martin and Maria are born 1 year apart. Can sum of ages be 112? Why?", keys: ["no", "impossible", "odd", "even"], min: 2, exp: "No. Sum of consecutive integers (Even+Odd) is always Odd. 112 is Even." },
-                { id: 'q12', q: "Parity of squares in 27 x 13 grid?", keys: ["odd", "product", "multiply"], min: 1, exp: "Odd. Odd x Odd = Odd." },
-                { id: 'q13', q: "Angaan climbs 4 steps (1 or 2 at a time). How many ways?", keys: ["5", "five", "ways"], min: 1, exp: "5 Ways (1, 2, 3, 5 sequence)." }
-            ],
-            sectionD: [
-                { id: 'q14', q: "Why can't 9 be in the center of a 1-9 Magic Square?", exp: "Sum must be 15. If 9 is center, neighbors must sum to 6. Logic fails." },
-                { id: 'q15', q: "Solve K2 + K2 = HMM. Find K, H, M.", exp: "M=4, H=1, K=7." }
-            ]
-        };
-
-        let timerInterval, startTime;
+        // --- CONFIG ---
+        const DB_KEY = 'cbse_math_db_v2';
         let studentName = "";
-        let sectionCDetails = [];
-        let isCameraReady = false;
-        let offlineMode = false;
+        let timerInterval;
+        let startTime;
+        
+        // --- CBSE QUESTION BANK (Based on Uploaded Chapter) ---
+        const questions = [
+            // SECTION A: MCQs & Assertion-Reasoning
+            { 
+                id: 'q1', section: 'Section A: Objective Type (1 Mark each)', 
+                text: "The sum of three odd numbers is always:", 
+                type: 'mcq', opts: ["Even", "Odd", "Prime", "Zero"], 
+                correct: 1, marks: 1,
+                exp: "Odd + Odd = Even. Even + Odd = Odd." 
+            },
+            { 
+                id: 'q2', section: 'Section A', 
+                text: "Which of the following is the 6th number in the Virahāńka-Fibonacci sequence (1, 2, 3, 5...)?", 
+                type: 'mcq', opts: ["8", "10", "13", "21"], 
+                correct: 2, marks: 1,
+                exp: "Sequence: 1, 2, 3, 5, 8, 13..." 
+            },
+            { 
+                id: 'q3', section: 'Section A', 
+                text: "Assertion (A): The sum of two consecutive integers is always odd.<br>Reason (R): Consecutive integers alternate between Even and Odd.", 
+                type: 'mcq', opts: ["Both A and R are true and R is correct explanation of A", "Both A and R are true but R is NOT correct explanation", "A is true but R is false", "A is false"], 
+                correct: 0, marks: 1,
+                exp: "Even + Odd = Odd. This is why consecutive sums are odd." 
+            },
+            { 
+                id: 'q4', section: 'Section A', 
+                text: "In a 3x3 Magic Square using numbers 1-9, the magic sum is:", 
+                type: 'mcq', opts: ["12", "15", "18", "45"], 
+                correct: 1, marks: 1,
+                exp: "Sum of 1-9 is 45. 45 divided by 3 rows = 15." 
+            },
+            { 
+                id: 'q5', section: 'Section A', 
+                text: "Find the value of 'n' if the nth even number is 100.", 
+                type: 'mcq', opts: ["200", "50", "49", "51"], 
+                correct: 1, marks: 1,
+                exp: "Formula for nth even number is 2n. 2n = 100 => n = 50." 
+            },
 
-        // --- SETUP LOGIC ---
+            // SECTION B: Case-Study (Competency Based)
+            { 
+                id: 'q6', section: 'Section B: Case-Study (4 Marks)', 
+                text: "<strong>Case Study: Angaan's Staircase</strong><br>Angaan wants to climb a staircase. He can take either <strong>1 step</strong> or <strong>2 steps</strong> at a time.<br><br>(i) How many ways can he climb a 3-step staircase?", 
+                type: 'text', keywords: ["3", "three"], minKeys: 1, marks: 1,
+                exp: "3 ways: (1,1,1), (1,2), (2,1)." 
+            },
+            { 
+                id: 'q7', section: 'Section B', 
+                text: "(ii) If the number of ways follows the Virahāńka sequence (1, 2, 3, 5...), how many ways are there to climb 5 steps?", 
+                type: 'text', keywords: ["8", "eight"], minKeys: 1, marks: 1,
+                exp: "Sequence is 1, 2, 3, 5, 8. So 5 steps = 8 ways." 
+            },
+            { 
+                id: 'q8', section: 'Section B', 
+                text: "(iii) This sequence was first discovered by which Indian Scholar?", 
+                type: 'text', keywords: ["virahanka", "pingala"], minKeys: 1, marks: 1,
+                exp: "Virahāńka (c. 700 CE)." 
+            },
+            { 
+                id: 'q9', section: 'Section B', 
+                text: "(iv) What is the parity of the number of ways to climb 6 steps (13 ways)?", 
+                type: 'text', keywords: ["odd"], minKeys: 1, marks: 1,
+                exp: "13 is an Odd number." 
+            },
 
+            // SECTION C: Short Answer
+            { 
+                id: 'q10', section: 'Section C: Short Answer (3 Marks each)', 
+                text: "Two siblings, Martin and Maria, were born exactly one year apart. Explain why the sum of their ages can NEVER be 112.", 
+                type: 'text', keywords: ["consecutive", "odd", "even"], minKeys: 1, marks: 3,
+                exp: "Ages are consecutive (one Even, one Odd). Sum of Even + Odd is always ODD. 112 is Even, so it's impossible." 
+            },
+            { 
+                id: 'q11', section: 'Section C', 
+                text: "Solve the Cryptarithm: <strong>K2 + K2 = HMM</strong>. Find the values of K, H, and M.", 
+                type: 'text', keywords: ["k=7", "m=4", "h=1"], minKeys: 2, marks: 3,
+                exp: "2+2=4 so M=4. Equation becomes K2+K2=H44. 72+72=144. So K=7, H=1, M=4." 
+            },
+
+            // SECTION D: Long Answer
+            { 
+                id: 'q12', section: 'Section D: Long Answer (5 Marks)', 
+                text: "Construct a Magic Square using numbers 1 to 9. Explain why the number 5 MUST be in the center.", 
+                type: 'text', keywords: ["average", "median", "pairs", "15"], minKeys: 1, marks: 5,
+                exp: "The center number participates in 4 sums (row, col, 2 diagonals). Only the median (5) balances the small and large numbers to sum to 15 in all directions." 
+            }
+        ];
+
+        // --- CORE FUNCTIONS ---
         function initCamera() {
             navigator.mediaDevices.getUserMedia({ video: true })
-                .then(s => {
-                    const video = document.getElementById('webcam');
-                    video.srcObject = s;
-                    video.style.display = 'block'; // Show video
-                    document.getElementById('cam-placeholder').style.display = 'none'; // Hide placeholder
-                    document.getElementById('rec-indicator').classList.remove('hidden');
-                    
-                    document.getElementById('cam-status').innerHTML = '<span class="text-green-600"><i class="fas fa-check"></i> Ready</span>';
-                    document.getElementById('cam-btn').innerHTML = '<i class="fas fa-check"></i> Camera Active';
-                    document.getElementById('cam-btn').classList.replace('bg-gray-700', 'bg-green-600');
-                    document.getElementById('cam-btn').disabled = true;
-                    
-                    isCameraReady = true;
-                    checkReady();
-                })
-                .catch(e => {
-                    console.error("Cam Error:", e);
-                    alert("Camera access denied or unavailable. You can still proceed in Offline Mode.");
-                    document.getElementById('cam-status').innerHTML = '<span class="text-red-500">Failed</span>';
-                });
-        }
-
-        function enableOfflineMode() {
-            offlineMode = true;
-            document.getElementById('db-status').innerHTML = '<span class="text-gray-500"><i class="fas fa-ban"></i> Offline Mode</span>';
-            // Bypass checks
-            document.getElementById('start-btn').disabled = false;
-            document.getElementById('start-btn').classList.remove('opacity-50', 'cursor-not-allowed');
-            document.getElementById('start-btn').innerText = "Start Test (Offline)";
-        }
-
-        function checkReady() {
-            // Start button only enabled if (Connected OR Offline) AND (CameraReady OR Offline)
-            if ( (window.isConnected() || offlineMode) && (isCameraReady || offlineMode) ) {
-                const btn = document.getElementById('start-btn');
-                btn.disabled = false;
-                btn.classList.remove('opacity-50', 'cursor-not-allowed');
-            }
+            .then(s => {
+                document.getElementById('webcam').srcObject = s;
+                document.getElementById('webcam').classList.remove('hidden');
+                document.getElementById('cam-sim').classList.add('hidden');
+            }).catch(e => console.log("Cam Blocked - Using Simulation"));
         }
 
         function startTest() {
-            const nameInput = document.getElementById('student-name');
-            if(!nameInput.value.trim()) { alert("Please enter your name."); return; }
-            studentName = nameInput.value.trim();
+            const name = document.getElementById('student-name').value.trim();
+            if(!name) { alert("Please enter your name."); return; }
+            studentName = name;
 
-            document.getElementById('intro-page').classList.add('hidden-page');
-            document.getElementById('test-form').classList.remove('hidden-page');
-            document.getElementById('timer-container').classList.remove('hidden');
+            document.getElementById('page-login').classList.add('hidden-page');
+            document.getElementById('page-test').classList.remove('hidden-page');
+            document.getElementById('timer-box').classList.remove('hidden');
 
-            renderQuestions();
+            renderPaper();
+            initCamera();
+            startTimer();
+        }
+
+        function startTimer() {
+            let t = 3600;
             startTime = new Date();
-            
-            let time = 3600;
             timerInterval = setInterval(() => {
-                time--;
-                const h = Math.floor(time/3600), m = Math.floor((time%3600)/60), s = time%60;
-                document.getElementById('timer').innerText = `${h}:${m<10?'0':''}${m}:${s<10?'0':''}${s}`;
-                if(time<=0) submitTest();
+                t--;
+                const m = Math.floor(t/60);
+                const s = t%60;
+                document.getElementById('timer-display').innerText = `${m}:${s<10?'0':''}${s}`;
+                if(t<=0) submitTest();
             }, 1000);
         }
 
-        function renderQuestions() {
-            const container = document.getElementById('questions-container');
-            let html = '';
-            const createCard = (title, content) => `<div class="bg-white rounded-xl shadow p-6 mb-6"><h3 class="font-bold border-b pb-2 mb-4 text-gray-700">${title}</h3>${content}</div>`;
+        function renderPaper() {
+            const container = document.getElementById('questions-wrapper');
+            let currentSection = "";
+            let html = "";
 
-            // A
-            let contentA = testData.sectionA.map((q, i) => `
-                <div class="mb-6 border-b pb-4 last:border-0">
-                    <p class="font-semibold text-gray-800 mb-2">Q${i+1}. ${q.q}</p>
-                    <div class="space-y-1">${q.opts.map((o, idx) => `<label class="block cursor-pointer hover:bg-gray-50 p-1 rounded"><input type="radio" name="${q.id}" value="${idx}" class="mr-2">${o}</label>`).join('')}</div>
-                </div>`).join('');
-            html += createCard("Section A: MCQ (1 Mark)", contentA);
+            questions.forEach((q, idx) => {
+                if(q.section !== currentSection) {
+                    currentSection = q.section;
+                    html += `<div class="section-header">${currentSection}</div>`;
+                }
+                
+                let inputHtml = "";
+                if(q.type === 'mcq') {
+                    inputHtml = `<div class="mt-3 space-y-2">
+                        ${q.opts.map((opt, i) => `
+                            <label class="flex items-center p-3 border border-gray-200 rounded hover:bg-blue-50 cursor-pointer">
+                                <input type="radio" name="${q.id}" value="${i}" class="mr-3 w-4 h-4 text-blue-600">
+                                <span class="text-sm text-gray-700">${opt}</span>
+                            </label>`).join('')}
+                    </div>`;
+                } else {
+                    inputHtml = `<textarea name="${q.id}" rows="3" class="w-full mt-3 p-3 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 bg-gray-50 text-sm" placeholder="Type your answer..."></textarea>`;
+                }
 
-            // B
-            let contentB = testData.sectionB.map((q, i) => `
-                <div class="mb-4 border-b pb-4 last:border-0">
-                    <p class="font-semibold text-gray-800 mb-2">Q${i+6}. ${q.q}</p>
-                    ${q.type==='text' ? `<input type="text" name="${q.id}" class="border p-2 w-full rounded bg-gray-50" placeholder="Answer...">` : `<div class="flex gap-4">${q.opts.map(o=>`<label><input type="radio" name="${q.id}" value="${o}" class="mr-1">${o}</label>`).join('')}</div>`}
-                </div>`).join('');
-            html += createCard("Section B: Fill in Blanks (1 Mark)", contentB);
-
-            // C & D
-            const renderText = (sec, startIdx) => sec.map((q, i) => `
-                <div class="mb-6 border-b pb-4 last:border-0">
-                    <p class="font-semibold text-gray-800 mb-2">Q${i+startIdx}. ${q.q}</p>
-                    <textarea name="${q.id}" rows="3" class="w-full border p-2 rounded bg-gray-50" placeholder="Type Answer..."></textarea>
-                </div>`).join('');
-            
-            html += createCard("Section C: Short Answer (Auto-Graded)", renderText(testData.sectionC, 11));
-            html += createCard("Section D: Long Answer (Self-Review)", renderText(testData.sectionD, 14));
-
+                html += `
+                    <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100 mb-6">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="font-bold text-gray-800">Q${idx+1}</span>
+                            <span class="text-xs font-bold text-gray-400 bg-gray-100 px-2 py-1 rounded">${q.marks} Marks</span>
+                        </div>
+                        <p class="text-gray-800 text-base">${q.text}</p>
+                        ${inputHtml}
+                    </div>
+                `;
+            });
             container.innerHTML = html;
         }
 
-        async function submitTest() {
+        function submitTest() {
             clearInterval(timerInterval);
-            const btn = document.getElementById('submit-btn');
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
-            btn.disabled = true;
-
-            const form = new FormData(document.getElementById('test-form'));
+            const form = new FormData(document.getElementById('page-test'));
             let score = 0;
-            const maxScore = 16;
+            let max = 0;
+            let solutions = [];
 
-            // Grade
-            testData.sectionA.forEach(q => { if(parseInt(form.get(q.id)) === q.correct) score++; });
-            testData.sectionB.forEach(q => { if((form.get(q.id)||"").toLowerCase().trim() === q.ans.toLowerCase()) score++; });
-            testData.sectionC.forEach(q => {
-                const ans = (form.get(q.id)||"").toLowerCase();
-                const hits = q.keys.filter(k => ans.includes(k));
-                let pts = hits.length >= q.min ? 2 : (hits.length > 0 ? 1 : 0);
-                score += pts;
-                sectionCDetails.push({id:q.id, pts});
+            questions.forEach(q => {
+                max += q.marks;
+                let earned = 0;
+                let userVal = "";
+
+                if(q.type === 'mcq') {
+                    const val = form.get(q.id);
+                    userVal = val ? q.opts[val] : "No Answer";
+                    if(val && parseInt(val) === q.correct) earned = q.marks;
+                } else {
+                    userVal = (form.get(q.id) || "").trim();
+                    if(q.keywords) {
+                        const hits = q.keywords.filter(k => userVal.toLowerCase().includes(k));
+                        if(hits.length >= q.minKeys) earned = q.marks;
+                        else if(hits.length > 0) earned = Math.ceil(q.marks/2);
+                    }
+                }
+                score += earned;
+                solutions.push({ q: q.text, u: userVal, e: q.exp, s: earned, m: q.marks });
             });
 
-            // Time
-            const end = new Date();
-            const diff = Math.floor((end - startTime)/1000);
-            const timeStr = `${Math.floor(diff/60)}m ${diff%60}s`;
-
-            // Save to DB
-            if (!offlineMode && window.isConnected()) {
-                try {
-                    const colRef = window.collection(window.db, 'artifacts', window.appId, 'public', 'data', window.COLLECTION_NAME);
-                    await window.addDoc(colRef, { name: studentName, score, maxScore, timeTaken: timeStr, timestamp: window.serverTimestamp() });
-                } catch(e) { console.error(e); }
-            } else {
-                document.getElementById('submission-msg').innerText = "Saved locally (Offline Mode)";
-            }
-
-            // Show Results
-            document.getElementById('test-form').classList.add('hidden-page');
-            document.getElementById('timer-container').classList.add('hidden');
-            document.getElementById('results-page').classList.remove('hidden-page');
-            document.getElementById('display-score').innerText = score;
+            // Save Data
+            const code = `CBSE-${score}-${Math.floor(Math.random()*1000)}`;
+            const payload = {
+                name: studentName, score, max, code, 
+                time: new Date().toLocaleTimeString(),
+                timestamp: Date.now()
+            };
             
-            buildSolutions(form);
+            const db = JSON.parse(localStorage.getItem(DB_KEY) || '[]');
+            db.push(payload);
+            localStorage.setItem(DB_KEY, JSON.stringify(db));
+
+            // Show Result
+            document.getElementById('page-test').classList.add('hidden-page');
+            document.getElementById('timer-box').classList.add('hidden');
+            document.getElementById('page-result').classList.remove('hidden-page');
+            document.getElementById('res-score').innerText = score;
+            document.getElementById('res-code').innerText = code;
+            
+            renderSolutions(solutions);
             window.scrollTo(0,0);
         }
 
-        function buildSolutions(form) {
-            const container = document.getElementById('solutions-container');
-            let html = '';
-            
-            const card = (qNum, qText, u, c, pts, max) => `
-            <div class="bg-gray-50 p-4 rounded border mb-4 ${pts===max?'border-green-200':(pts>0?'border-yellow-200':'border-red-200')}">
-                <p class="font-bold text-gray-800 mb-2">${qNum}. ${qText}</p>
-                <div class="grid grid-cols-2 gap-4 text-sm">
-                    <div><span class="block text-xs font-bold text-gray-500">YOUR ANSWER</span><span class="text-gray-800">${u}</span></div>
-                    <div><span class="block text-xs font-bold text-green-600">CORRECT ANSWER</span><span class="text-green-700">${c}</span></div>
+        function renderSolutions(data) {
+            const area = document.getElementById('solutions-area');
+            area.innerHTML = data.map((d, i) => {
+                const isCorrect = d.s === d.m;
+                const isZero = d.s === 0;
+                // Use Green for full marks, Red for zero, Yellow for partial
+                const borderColor = isCorrect ? 'border-green-500' : (isZero ? 'border-red-500' : 'border-yellow-500');
+                const bgColor = isCorrect ? 'bg-green-50' : (isZero ? 'bg-red-50' : 'bg-yellow-50');
+                const badgeColor = isCorrect ? 'bg-green-100 text-green-800' : (isZero ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800');
+                
+                return `
+                <div class="p-4 border-l-4 rounded-r shadow-sm ${borderColor} ${bgColor} text-left text-sm mb-4">
+                    <div class="flex justify-between items-start mb-2">
+                        <div class="font-bold text-gray-900 text-base w-full pr-4">Q${i+1}. ${d.q}</div>
+                        <span class="text-xs font-bold ${badgeColor} px-2 py-1 rounded border border-opacity-20 shadow-sm whitespace-nowrap flex-shrink-0">
+                            ${d.s} / ${d.m} Marks
+                        </span>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 gap-2 mt-2">
+                        <!-- User Answer -->
+                        <div class="bg-white/80 p-2 rounded border border-gray-200">
+                            <span class="text-[10px] font-bold text-gray-500 block uppercase tracking-wider mb-1">Your Response</span>
+                            <div class="font-medium ${isCorrect ? 'text-green-700' : 'text-red-700'}">
+                                ${d.u || "<span class='italic text-gray-400'>No Answer provided</span>"}
+                            </div>
+                        </div>
+                        
+                        <!-- Expected Answer -->
+                        <div class="bg-white/80 p-2 rounded border border-gray-200">
+                            <span class="text-[10px] font-bold text-gray-500 block uppercase tracking-wider mb-1">Correct Answer / Explanation</span>
+                            <div class="text-gray-800">${d.e}</div>
+                        </div>
+                    </div>
                 </div>
-                <div class="text-right mt-2 text-xs font-bold">Score: ${pts}/${max}</div>
-            </div>`;
-
-            html += `<h4 class="font-bold text-lg mt-4 mb-2">Section A</h4>`;
-            testData.sectionA.forEach((q,i) => {
-                const val = form.get(q.id);
-                const pts = parseInt(val)===q.correct?1:0;
-                html += card(`Q${i+1}`, q.q, val?q.opts[val]:"-", q.opts[q.correct], pts, 1);
-            });
-
-            html += `<h4 class="font-bold text-lg mt-4 mb-2">Section B</h4>`;
-            testData.sectionB.forEach((q,i) => {
-                const val = form.get(q.id)||"";
-                const pts = val.toLowerCase().trim()===q.ans.toLowerCase()?1:0;
-                html += card(`Q${i+6}`, q.q, val, q.ans, pts, 1);
-            });
-
-            html += `<h4 class="font-bold text-lg mt-4 mb-2">Section C</h4>`;
-            testData.sectionC.forEach((q,i) => {
-                const res = sectionCDetails.find(r=>r.id===q.id);
-                html += card(`Q${i+11}`, q.q, form.get(q.id)||"No Answer", q.exp, res.pts, 2);
-            });
-
-            container.innerHTML = html;
+                `;
+            }).join('');
         }
 
         function toggleSolutions() {
-            document.getElementById('solutions-container').classList.remove('hidden');
-            document.getElementById('solutions-container').scrollIntoView({behavior:'smooth'});
+            const el = document.getElementById('solutions-area');
+            el.classList.toggle('hidden');
+        }
+        
+        function copyCode(el) {
+            // Robust Copy
+            const text = el.innerText.replace("Code: ", "");
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            document.body.appendChild(ta);
+            ta.select();
+            try { document.execCommand('copy'); alert("Code Copied!"); } 
+            catch(e) { prompt("Copy Code:", text); }
+            document.body.removeChild(ta);
         }
 
         // --- ADMIN ---
-        function showAdminLogin() {
-            if(prompt("Password:")==="admin123") {
-                document.getElementById('intro-page').classList.add('hidden-page');
-                document.getElementById('admin-dashboard').classList.remove('hidden-page');
-                document.getElementById('admin-controls').classList.remove('hidden');
+        function adminLogin() {
+            if(prompt("Admin Password") === "admin123") {
+                document.querySelectorAll('main > div').forEach(d => d.classList.add('hidden-page'));
+                document.getElementById('page-admin').classList.remove('hidden-page');
+                document.getElementById('admin-logout-btn').classList.remove('hidden');
                 
-                if(!window.isConnected()) {
-                    document.getElementById('admin-table-body').innerHTML = '<tr><td colspan="4" class="text-center py-4 text-red-500">Offline. Cannot fetch live data.</td></tr>';
-                    return;
-                }
-
-                const col = window.collection(window.db, 'artifacts', window.appId, 'public', 'data', window.COLLECTION_NAME);
-                const q = window.query(col, window.orderBy('timestamp', 'desc'));
-                
-                window.onSnapshot(q, (snap) => {
-                    const tb = document.getElementById('admin-table-body');
-                    if(snap.empty) { tb.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-gray-400">No submissions.</td></tr>'; return; }
-                    tb.innerHTML = '';
-                    snap.forEach(d => {
-                        const data = d.data();
-                        const time = data.timestamp ? data.timestamp.toDate().toLocaleTimeString() : 'Just now';
-                        const isNew = data.timestamp && (new Date() - data.timestamp.toDate() < 5000);
-                        tb.innerHTML += `<tr class="border-b ${isNew?'new-row':''}"><td class="py-3 px-6">${time}</td><td class="py-3 px-6 font-bold">${data.name}</td><td class="py-3 px-6 text-center">${data.score}/${data.maxScore}</td><td class="py-3 px-6 text-center">${data.timeTaken}</td></tr>`;
-                    });
-                });
+                loadAdmin();
+                setInterval(loadAdmin, 2000); // Live Sync
             }
         }
 
-        window.initCamera = initCamera;
-        window.enableOfflineMode = enableOfflineMode;
-        window.startTest = startTest;
-        window.submitTest = submitTest;
-        window.toggleSolutions = toggleSolutions;
-        window.showAdminLogin = showAdminLogin;
+        function loadAdmin() {
+            const db = JSON.parse(localStorage.getItem(DB_KEY) || '[]');
+            const tbody = document.getElementById('admin-tbody');
+            const empty = document.getElementById('admin-empty');
+
+            if(db.length === 0) { empty.style.display = 'block'; tbody.innerHTML = ''; return; }
+            
+            empty.style.display = 'none';
+            if(tbody.childElementCount === db.length) return; // No change
+
+            db.sort((a,b) => b.timestamp - a.timestamp);
+            tbody.innerHTML = db.map((d, i) => `
+                <tr class="border-b hover:bg-gray-50 ${i===0?'new-row':''}">
+                    <td class="p-4">${d.time}</td>
+                    <td class="p-4 font-bold">${d.name}</td>
+                    <td class="p-4 text-center"><span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs font-bold">${d.score}/${d.max}</span></td>
+                    <td class="p-4 text-right font-mono">${d.code}</td>
+                </tr>
+            `).join('');
+        }
+        
+        function manualFetch() {
+            const code = document.getElementById('manual-code').value.trim();
+            const parts = code.split('-');
+            if(parts.length >= 2) alert(`Decoded Score: ${parts[1]}/20`);
+            else alert("Invalid Code");
+        }
     </script>
 </body>
 </html>
