@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CBSE Class 7 Math: Standard Exam</title>
+    <title>CBSE Class 7 Math: Competency Assessment</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -100,6 +100,7 @@
                         <li>Section A: MCQs & Assertion-Reasoning (1 mark each).</li>
                         <li>Section B: Competency/Case-Study (4 marks).</li>
                         <li>Section C & D: Short & Long Answer (Subjective).</li>
+                        <li><strong>Note:</strong> Subjective answers are auto-graded based on key concepts.</li>
                     </ul>
                 </div>
 
@@ -195,7 +196,7 @@
     <!-- FOOTER -->
     <footer class="bg-white border-t py-4 mt-auto">
         <div class="container mx-auto px-4 flex justify-between items-center text-xs text-gray-400">
-            <p>CBSE Assessment Portal v2.0</p>
+            <p>CBSE Assessment Portal v2.1</p>
             <button onclick="adminLogin()" class="font-bold hover:text-gray-800">Teacher Login</button>
         </div>
     </footer>
@@ -369,6 +370,24 @@
             container.innerHTML = html;
         }
 
+        // --- UPDATED GRADING LOGIC ---
+        function checkKeyword(userText, keyword) {
+            const u = userText.toLowerCase();
+            const k = keyword.toLowerCase();
+            
+            // If keyword contains non-letters (like numbers or symbols e.g., "k=7"), 
+            // we use strict inclusion because word boundaries \b fail on symbols like =
+            if (/[^a-z]/.test(k)) {
+                return u.includes(k);
+            }
+            
+            // For standard words, we use Regex Word Boundaries (\b) to ensure
+            // "odd" does NOT match "toddler" or "goddess".
+            // It MUST be a distinct word in the sentence.
+            const regex = new RegExp(`\\b${k}\\b`, 'i');
+            return regex.test(u);
+        }
+
         function submitTest() {
             clearInterval(timerInterval);
             const form = new FormData(document.getElementById('page-test'));
@@ -388,7 +407,9 @@
                 } else {
                     userVal = (form.get(q.id) || "").trim();
                     if(q.keywords) {
-                        const hits = q.keywords.filter(k => userVal.toLowerCase().includes(k));
+                        // Use the new checkKeyword function
+                        const hits = q.keywords.filter(k => checkKeyword(userVal, k));
+                        
                         if(hits.length >= q.minKeys) earned = q.marks;
                         else if(hits.length > 0) earned = Math.ceil(q.marks/2);
                     }
