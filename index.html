@@ -3,652 +3,538 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ICSE Class IV - Mathematics CBT Exam</title>
+    <title>CBSE Class 7 Math: Competency Assessment</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; margin: 0; padding: 0; user-select: none; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8fafc; user-select: none; }
         
-        /* Question Palette Colors */
-        .status-not-visited { background-color: #e5e7eb; color: #374151; border: 1px solid #d1d5db; }
-        .status-not-answered { background-color: #ef4444; color: white; border: 1px solid #dc2626; }
-        .status-answered { background-color: #22c55e; color: white; border: 1px solid #16a34a; }
-        .status-review { background-color: #a855f7; color: white; border: 1px solid #9333ea; }
+        /* CBSE Paper Styling */
+        .paper-header { border-bottom: 2px solid #334155; padding-bottom: 1rem; margin-bottom: 2rem; }
+        .section-header { 
+            background: #e2e8f0; color: #1e293b; 
+            padding: 0.5rem 1rem; font-weight: 700; 
+            border-left: 5px solid #3b82f6; margin: 1.5rem 0 1rem 0;
+            text-transform: uppercase; letter-spacing: 0.05em;
+        }
         
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #f1f1f1; }
-        ::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
-
-        .option-label:hover { background-color: #f3f4f6; }
-        .option-label input:checked + span { font-weight: bold; color: #1d4ed8; }
+        /* Camera UI */
+        .camera-container {
+            width: 140px; height: 105px;
+            background: #000; border: 2px solid #ef4444;
+            border-radius: 6px; overflow: hidden; position: relative;
+        }
+        .camera-feed { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+        .camera-sim {
+            width: 100%; height: 100%; display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            background: #1e293b; color: #94a3b8; font-size: 0.7rem;
+        }
         
-        .math-text { font-size: 1.1rem; }
-        
-        .pictograph-table th, .pictograph-table td { padding: 12px; border: 1px solid #d1d5db; }
-        .pictograph-table th { background-color: #f3f4f6; font-weight: bold; }
+        .hidden-page { display: none !important; }
+        .new-row { animation: flash 2s ease-out; }
+        @keyframes flash { 0% { background-color: #bbf7d0; } 100% { background-color: transparent; } }
     </style>
 </head>
-<body class="h-screen flex flex-col overflow-hidden">
+<body class="bg-slate-50 min-h-screen flex flex-col">
 
-    <!-- Header -->
-    <header class="bg-blue-800 text-white shadow-md z-10 flex-shrink-0">
-        <div class="px-6 py-3 flex justify-between items-center">
-            <div>
-                <h1 class="text-xl font-bold tracking-wide">INDIAN SCHOOL DARSAIT - CBT PORTAL</h1>
-                <p class="text-xs text-blue-200">Annual Examination Revision - March 2026 | Class IV Mathematics</p>
+    <!-- HEADER -->
+    <header class="fixed top-0 w-full bg-white shadow-sm z-50 h-16 border-b border-gray-200">
+        <div class="container mx-auto px-4 h-full flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <img src="https://upload.wikimedia.org/wikipedia/en/thumb/9/95/CBSE_new_logo.svg/1200px-CBSE_new_logo.svg.png" class="h-10 w-auto" alt="CBSE Logo">
+                <div>
+                    <h1 class="text-sm font-bold text-gray-800 uppercase">Class 7 Mathematics</h1>
+                    <p class="text-[10px] text-gray-500 font-medium">Competency Based Assessment</p>
+                </div>
             </div>
-            <div id="header-timer-container" class="hidden flex items-center bg-blue-900 px-4 py-2 rounded-md border border-blue-700 shadow-inner">
-                <svg class="w-5 h-5 mr-2 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                <span class="text-sm text-blue-200 mr-2">Time Left:</span>
-                <span id="timer" class="text-xl font-mono font-bold tracking-wider text-yellow-400">60:00</span>
+
+            <!-- Timer -->
+            <div id="timer-box" class="hidden bg-slate-100 px-3 py-1 rounded border border-slate-300">
+                <span class="text-[10px] text-gray-500 font-bold block text-center">TIME LEFT</span>
+                <div id="timer-display" class="text-lg font-mono font-bold text-blue-700">60:00</div>
+            </div>
+
+            <!-- Cam -->
+            <div class="relative group">
+                <div class="camera-container">
+                    <video id="webcam" class="camera-feed hidden" autoplay playsinline muted></video>
+                    <div id="cam-sim" class="camera-sim">
+                        <i class="fas fa-video-slash mb-1"></i>
+                        <span>AI Proctoring</span>
+                    </div>
+                </div>
+                <div class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+            </div>
+            
+            <div id="admin-logout-btn" class="hidden absolute top-16 right-4">
+                 <button onclick="location.reload()" class="text-xs bg-red-500 text-white px-2 py-1 rounded">Logout</button>
             </div>
         </div>
     </header>
 
-    <!-- SCREEN 1: INSTRUCTIONS -->
-    <div id="screen-instructions" class="flex-1 overflow-y-auto p-6 bg-white">
-        <div class="max-w-4xl mx-auto border border-gray-300 rounded-lg shadow-sm">
-            <div class="bg-gray-100 p-4 border-b border-gray-300 flex items-center gap-4">
-                <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center text-blue-800 font-bold text-xl border-2 border-blue-300">
-                    S
+    <!-- MAIN -->
+    <main class="container mx-auto px-4 pt-24 pb-12 max-w-4xl flex-grow">
+
+        <!-- 1. LOGIN -->
+        <div id="page-login" class="bg-white p-8 rounded-lg shadow-lg border border-gray-200 max-w-lg mx-auto mt-10">
+            <div class="text-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-800">Periodic Test: Number Play</h2>
+                <p class="text-gray-500 text-sm mt-1">Based on New CBSE/NCERT Curriculum</p>
+            </div>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-gray-600 uppercase mb-1">Candidate Name</label>
+                    <input type="text" id="student-name" class="w-full p-3 border rounded-md focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Enter Name">
                 </div>
                 <div>
-                    <h2 class="text-lg font-bold text-gray-800">Mock Candidate</h2>
-                    <p class="text-sm text-gray-600">Subject: Mathematics (Class IV)</p>
+                    <label class="block text-xs font-bold text-gray-600 uppercase mb-1">Roll Number</label>
+                    <input type="text" class="w-full p-3 border rounded-md focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Enter Roll No">
+                </div>
+                
+                <div class="bg-blue-50 p-3 rounded text-xs text-blue-800">
+                    <strong>Instructions:</strong>
+                    <ul class="list-disc ml-4 mt-1 space-y-1">
+                        <li>The question paper contains 4 sections: A, B, C, D.</li>
+                        <li>Section A: MCQs & Assertion-Reasoning (1 mark each).</li>
+                        <li>Section B: Competency/Case-Study (4 marks).</li>
+                        <li>Section C & D: Short & Long Answer (Subjective).</li>
+                        <li><strong>Note:</strong> Subjective answers are auto-graded based on key concepts.</li>
+                    </ul>
+                </div>
+
+                <button onclick="startTest()" class="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-3 rounded-md transition shadow-md">
+                    Proceed to Test
+                </button>
+            </div>
+        </div>
+
+        <!-- 2. TEST PAPER -->
+        <form id="page-test" class="hidden-page">
+            
+            <!-- Paper Header -->
+            <div class="paper-header text-center">
+                <h2 class="text-xl font-bold text-gray-900">MATHEMATICS (041)</h2>
+                <p class="text-sm text-gray-600">Class VII | Max Marks: 20 | Time: 1 Hour</p>
+                <div class="flex justify-center gap-4 text-xs font-bold mt-2 text-gray-500">
+                    <span>SECTION A (5M)</span>
+                    <span>SECTION B (4M)</span>
+                    <span>SECTION C (6M)</span>
+                    <span>SECTION D (5M)</span>
                 </div>
             </div>
-            <div class="p-8">
-                <h3 class="text-xl font-bold mb-4 text-center underline decoration-2 decoration-blue-500">General Instructions</h3>
-                <p class="text-sm text-gray-700 mb-4"><strong>Please read the following instructions carefully before starting the exam:</strong></p>
-                
-                <ul class="list-disc pl-6 space-y-2 text-sm text-gray-700 mb-6">
-                    <li>Total duration of the examination is <strong>60 Minutes</strong>.</li>
-                    <li>The clock will be set at the server. The countdown timer in the top right corner will display the remaining time available for you to complete the examination. When the timer reaches zero, the examination will end by itself.</li>
-                    <li>The Question Palette displayed on the right side of screen will show the status of each question using one of the following symbols:</li>
-                </ul>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8 bg-gray-50 p-4 rounded-lg border border-gray-200">
-                    <div class="flex items-center gap-3"><div class="w-8 h-8 rounded-md flex items-center justify-center font-bold status-not-visited">1</div><span class="text-sm">You have not visited the question yet.</span></div>
-                    <div class="flex items-center gap-3"><div class="w-8 h-8 rounded-md flex items-center justify-center font-bold status-not-answered">2</div><span class="text-sm">You have not answered the question.</span></div>
-                    <div class="flex items-center gap-3"><div class="w-8 h-8 rounded-md flex items-center justify-center font-bold status-answered">3</div><span class="text-sm">You have answered the question.</span></div>
-                    <div class="flex items-center gap-3"><div class="w-8 h-8 rounded-md flex items-center justify-center font-bold status-review">4</div><span class="text-sm">You have marked the question for review.</span></div>
+            <!-- Questions Container -->
+            <div id="questions-wrapper"></div>
+
+            <div class="flex justify-end mt-8 pt-6 border-t">
+                <button type="button" onclick="submitTest()" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-10 rounded shadow-lg text-lg">
+                    Submit Answer Sheet
+                </button>
+            </div>
+        </form>
+
+        <!-- 3. RESULT -->
+        <div id="page-result" class="hidden-page max-w-2xl mx-auto">
+            <div class="bg-white rounded-lg shadow-xl overflow-hidden">
+                <div class="bg-slate-800 p-6 text-center text-white">
+                    <h2 class="text-2xl font-bold">Submission Confirmed</h2>
+                    <p class="text-sm opacity-80 mt-1">Your response has been recorded in the local database.</p>
                 </div>
+                <div class="p-8 text-center">
+                    <div class="text-6xl font-black text-blue-600 mb-2">
+                        <span id="res-score">0</span><span class="text-2xl text-gray-400">/20</span>
+                    </div>
+                    <p class="text-gray-500 text-sm font-medium mb-6">Total Marks Obtained</p>
+                    
+                    <div class="bg-gray-100 p-4 rounded-lg font-mono text-sm text-gray-600 mb-6 select-all cursor-pointer" onclick="copyCode(this)">
+                        Code: <span id="res-code" class="font-bold text-black">---</span>
+                    </div>
 
-                <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
-                    <h4 class="font-bold text-yellow-800 mb-1">Navigating & Answering:</h4>
-                    <p class="text-sm text-yellow-800">To answer a question, select the option or type your answer in the box provided. Click on <strong>"Save & Next"</strong> to save your answer and move to the next question. You can use <strong>"Mark for Review"</strong> if you wish to look at the question again later.</p>
-                </div>
-
-                <hr class="my-6">
-
-                <div class="flex items-start gap-3 mb-6">
-                    <input type="checkbox" id="agree-checkbox" class="mt-1 w-5 h-5 cursor-pointer accent-blue-600" onchange="toggleStartButton()">
-                    <label for="agree-checkbox" class="text-sm text-gray-800 cursor-pointer font-medium">
-                        I have read and understood the instructions. All computer hardware allotted to me are in proper working condition. I agree that I am not carrying any prohibited gadgets or materials.
-                    </label>
-                </div>
-
-                <div class="text-center">
-                    <button id="btn-start" disabled class="bg-gray-400 text-white font-bold py-3 px-10 rounded shadow transition-all duration-200 cursor-not-allowed" onclick="startExam()">
-                        I am ready to begin
+                    <button onclick="toggleSolutions()" class="text-blue-600 hover:underline font-bold text-sm">
+                        View Detailed Answer Key
                     </button>
                 </div>
             </div>
-        </div>
-    </div>
-
-    <!-- SCREEN 2: EXAM INTERFACE -->
-    <div id="screen-exam" class="hidden flex-1 flex overflow-hidden">
-        
-        <!-- Left Panel: Question Area -->
-        <div class="flex-1 flex flex-col bg-white border-r border-gray-300">
-            <!-- Section Header -->
-            <div class="bg-blue-50 px-6 py-2 border-b border-gray-300 flex justify-between items-center shadow-sm z-10">
-                <span id="section-title" class="font-bold text-blue-800 uppercase tracking-wide">Section Name</span>
-                <span class="bg-white px-3 py-1 rounded text-sm font-bold border border-blue-200 text-blue-700">Marks: +1, -0</span>
-            </div>
-
-            <!-- Question Content -->
-            <div class="flex-1 overflow-y-auto p-8">
-                <div class="flex gap-4">
-                    <div class="font-bold text-lg text-gray-500 w-10">Q<span id="q-number">1</span>.</div>
-                    <div class="flex-1">
-                        <div id="q-text" class="text-lg text-gray-800 mb-6 math-text leading-relaxed font-medium">Question text goes here.</div>
-                        <div id="q-options" class="space-y-3">
-                            <!-- Options or Textbox injected here via JS -->
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Action Footer -->
-            <div class="bg-gray-100 p-4 border-t border-gray-300 flex justify-between items-center flex-shrink-0">
-                <div class="flex gap-3">
-                    <button class="bg-white border border-gray-400 text-gray-700 hover:bg-gray-50 font-semibold py-2 px-4 rounded text-sm shadow-sm transition-colors" onclick="markForReview()">Mark for Review & Next</button>
-                    <button class="bg-white border border-gray-400 text-gray-700 hover:bg-gray-50 font-semibold py-2 px-4 rounded text-sm shadow-sm transition-colors" onclick="clearResponse()">Clear Response</button>
-                </div>
-                <button class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-8 rounded shadow text-sm transition-colors" onclick="saveAndNext()">Save & Next</button>
-            </div>
+            <div id="solutions-area" class="hidden mt-8 space-y-4"></div>
         </div>
 
-        <!-- Right Panel: Question Palette -->
-        <div class="w-72 bg-gray-50 flex flex-col flex-shrink-0">
-            <div class="p-4 border-b border-gray-300 bg-white flex items-center gap-3">
-                 <div class="w-10 h-10 bg-blue-100 rounded flex items-center justify-center text-blue-800 font-bold border border-blue-300">S</div>
-                 <div class="text-sm font-bold text-gray-700">Mock Candidate</div>
-            </div>
-            
-            <div class="p-4 border-b border-gray-300 text-xs flex flex-wrap gap-2 bg-white">
-                <div class="flex items-center gap-1 w-full mb-1"><div class="w-4 h-4 rounded-sm status-answered"></div> Answered</div>
-                <div class="flex items-center gap-1 w-full mb-1"><div class="w-4 h-4 rounded-sm status-not-answered"></div> Not Answered</div>
-                <div class="flex items-center gap-1 w-full mb-1"><div class="w-4 h-4 rounded-sm status-not-visited"></div> Not Visited</div>
-                <div class="flex items-center gap-1 w-full"><div class="w-4 h-4 rounded-sm status-review"></div> Marked for Review</div>
-            </div>
-
-            <div class="flex-1 overflow-y-auto p-4">
-                <h4 class="font-bold text-gray-700 mb-3 text-sm">Question Palette:</h4>
-                <div id="palette-grid" class="grid grid-cols-4 gap-2">
-                    <!-- Palette buttons injected via JS -->
+        <!-- 4. ADMIN DASHBOARD -->
+        <div id="page-admin" class="hidden-page">
+            <div class="bg-white rounded-xl shadow-lg border min-h-[600px] flex flex-col">
+                <div class="bg-gray-900 text-white p-4 flex justify-between items-center">
+                    <h2 class="font-bold text-lg"><i class="fas fa-chalkboard-teacher mr-2"></i>Teacher Dashboard</h2>
+                    <span class="text-xs bg-green-600 px-2 py-1 rounded">Live Sync</span>
                 </div>
-            </div>
-
-            <div class="p-4 bg-gray-200 border-t border-gray-300 flex-shrink-0">
-                <button class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded shadow-md transition-colors" onclick="confirmSubmit()">Submit Test</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- SCREEN 3: RESULTS -->
-    <div id="screen-results" class="hidden flex-1 overflow-y-auto p-6 bg-gray-50">
-        <div class="max-w-5xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
-            <div class="bg-blue-800 text-white p-8 text-center">
-                <h2 class="text-3xl font-bold mb-2">Test Submitted Successfully</h2>
-                <p class="text-blue-200">Here is your detailed performance report.</p>
-            </div>
-            
-            <div class="p-8">
-                <div class="flex justify-center mb-8">
-                    <div class="text-center bg-blue-50 border border-blue-200 rounded-2xl p-6 shadow-sm w-64">
-                        <p class="text-gray-500 font-semibold mb-1 uppercase tracking-wide text-sm">Total Score</p>
-                        <p class="text-5xl font-bold text-blue-700"><span id="final-score">0</span><span class="text-2xl text-gray-400 font-normal"> / <span id="total-qs-label">45</span></span></p>
-                    </div>
+                
+                <!-- Manual Fetch -->
+                <div class="p-4 bg-gray-50 border-b flex gap-2">
+                    <input type="text" id="manual-code" placeholder="Enter Result Code (e.g. CBSE-15-X9Y)" class="flex-grow p-2 border rounded text-sm uppercase font-mono">
+                    <button onclick="manualFetch()" class="bg-gray-700 text-white px-4 py-2 rounded text-sm font-bold">Search</button>
                 </div>
 
-                <h3 class="text-xl font-bold border-b pb-2 mb-6 text-gray-800">Detailed Question Review</h3>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="bg-gray-100 text-gray-700 text-sm uppercase tracking-wider">
-                                <th class="p-3 border-b border-gray-300 font-semibold rounded-tl-lg w-16">Q.No</th>
-                                <th class="p-3 border-b border-gray-300 font-semibold w-32">Status</th>
-                                <th class="p-3 border-b border-gray-300 font-semibold">Your Answer</th>
-                                <th class="p-3 border-b border-gray-300 font-semibold">Correct Answer</th>
+                <div class="overflow-auto flex-grow">
+                    <table class="w-full text-left">
+                        <thead class="bg-gray-100 text-gray-500 text-xs uppercase font-bold">
+                            <tr>
+                                <th class="p-4">Time</th>
+                                <th class="p-4">Student</th>
+                                <th class="p-4 text-center">Marks</th>
+                                <th class="p-4 text-right">Code</th>
                             </tr>
                         </thead>
-                        <tbody id="result-tbody" class="text-sm">
-                            <!-- Rows injected via JS -->
-                        </tbody>
+                        <tbody id="admin-tbody" class="text-sm text-gray-700"></tbody>
                     </table>
+                    <div id="admin-empty" class="text-center py-12 text-gray-400">No submissions yet...</div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Confirm Modal -->
-    <div id="confirm-modal" class="hidden fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center">
-        <div class="bg-white rounded-lg p-6 max-w-sm w-full shadow-2xl">
-            <h3 class="text-lg font-bold text-gray-800 mb-2">Submit Examination?</h3>
-            <p class="text-gray-600 mb-6 text-sm">Are you sure you want to submit? You will not be able to change your answers after submission.</p>
-            <div class="flex justify-end gap-3">
-                <button class="px-4 py-2 border border-gray-300 rounded text-gray-700 hover:bg-gray-50 font-medium" onclick="document.getElementById('confirm-modal').classList.add('hidden')">Cancel</button>
-                <button class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 font-medium" onclick="finishExam()">Yes, Submit</button>
-            </div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-white border-t py-4 mt-auto">
+        <div class="container mx-auto px-4 flex justify-between items-center text-xs text-gray-400">
+            <p>CBSE Assessment Portal v2.1</p>
+            <button onclick="adminLogin()" class="font-bold hover:text-gray-800">Teacher Login</button>
         </div>
-    </div>
-
-    <!-- Fullscreen Enforcement Overlay -->
-    <div id="fullscreen-warning" class="hidden fixed inset-0 bg-black bg-opacity-95 z-[100] flex flex-col items-center justify-center text-white p-6 text-center">
-        <svg class="w-20 h-20 text-red-500 mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-        <h2 class="text-4xl font-bold mb-4">Exam Paused</h2>
-        <p class="text-xl mb-8 text-gray-300 max-w-lg">You have exited fullscreen mode. This is not allowed during the examination. Please return to fullscreen to resume your test.</p>
-        <button onclick="returnToFullscreen()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-10 rounded shadow-lg text-xl transition-all">Return to Fullscreen</button>
-    </div>
+    </footer>
 
     <script>
-        // --- SECURITY / ANTI-CHEAT ---
-        let examActive = false;
-
-        // Disable Right-Click
-        document.addEventListener('contextmenu', event => event.preventDefault());
-
-        // Disable Inspect Element & View Source keyboard shortcuts + Escape key attempt
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'F12' || 
-               (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j' || e.key === 'C' || e.key === 'c')) ||
-               (e.ctrlKey && (e.key === 'U' || e.key === 'u')) ||
-               e.key === 'Escape') {
-                e.preventDefault();
-            }
-        });
-
-        // Enforce Fullscreen
-        document.addEventListener('fullscreenchange', handleFullscreenChange);
-        document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
-        document.addEventListener('mozfullscreenchange', handleFullscreenChange);
-        document.addEventListener('MSFullscreenChange', handleFullscreenChange);
-
-        function handleFullscreenChange() {
-            if (examActive) {
-                const isFullscreen = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement;
-                if (!isFullscreen) {
-                    // Block screen if they exit fullscreen during an active exam
-                    document.getElementById('fullscreen-warning').classList.remove('hidden');
-                } else {
-                    document.getElementById('fullscreen-warning').classList.add('hidden');
-                }
-            }
-        }
-
-        function returnToFullscreen() {
-            const docElm = document.documentElement;
-            if (docElm.requestFullscreen) {
-                docElm.requestFullscreen().catch(err => console.log(err));
-            } else if (docElm.webkitRequestFullscreen) {
-                docElm.webkitRequestFullscreen();
-            } else if (docElm.msRequestFullscreen) {
-                docElm.msRequestFullscreen();
-            }
-        }
-
-        function exitFullscreen() {
-            if (document.exitFullscreen) {
-                document.exitFullscreen().catch(err => console.log(err));
-            } else if (document.webkitExitFullscreen) { 
-                document.webkitExitFullscreen();
-            } else if (document.msExitFullscreen) { 
-                document.msExitFullscreen();
-            }
-        }
-
-        // Data Handling - Pictograph HTML
-        const dicePictographHTML = `
-            <div class='bg-blue-50 p-4 rounded-lg my-4 border border-blue-200'>
-                <h4 class='font-bold mb-3 text-blue-900'>Dice Rolling Data (Key: 1 🎲 = 2 times)</h4>
-                <table class='w-full text-left bg-white pictograph-table'>
-                    <tr><th>Number on Dice</th><th>Number of times appeared</th></tr>
-                    <tr><td class='font-bold text-center'>1</td><td class='text-2xl'>🎲🎲</td></tr>
-                    <tr><td class='font-bold text-center'>2</td><td class='text-2xl'>🎲🎲🎲🎲🎲</td></tr>
-                    <tr><td class='font-bold text-center'>3</td><td class='text-2xl'>🎲</td></tr>
-                    <tr><td class='font-bold text-center'>4</td><td class='text-2xl'>🎲🎲🎲🎲</td></tr>
-                    <tr><td class='font-bold text-center'>5</td><td class='text-2xl'>🎲🎲🎲🎲🎲🎲</td></tr>
-                    <tr><td class='font-bold text-center'>6</td><td class='text-2xl'>🎲🎲</td></tr>
-                </table>
-            </div>
-        `;
-
-        // Data Handling - Bar Graph HTML
-        const booksBarGraphHTML = `
-            <div class='bg-green-50 p-6 rounded-lg my-4 border border-green-200 shadow-sm'>
-                <h4 class='font-bold mb-5 text-green-900 text-center'>Bar Graph: Number of Books Read in a Month</h4>
-                <div class='space-y-4 max-w-md mx-auto relative'>
-                    <div class='flex items-center'>
-                        <div class='w-16 font-bold text-gray-700 text-right pr-4'>Ali</div>
-                        <div class='bg-blue-500 h-8 rounded-r-md flex items-center shadow' style='width: 40%;'></div>
-                        <div class='ml-3 text-sm font-bold text-gray-800'>4</div>
-                    </div>
-                    <div class='flex items-center'>
-                        <div class='w-16 font-bold text-gray-700 text-right pr-4'>Ben</div>
-                        <div class='bg-red-500 h-8 rounded-r-md flex items-center shadow' style='width: 60%;'></div>
-                        <div class='ml-3 text-sm font-bold text-gray-800'>6</div>
-                    </div>
-                    <div class='flex items-center'>
-                        <div class='w-16 font-bold text-gray-700 text-right pr-4'>Cara</div>
-                        <div class='bg-yellow-500 h-8 rounded-r-md flex items-center shadow' style='width: 30%;'></div>
-                        <div class='ml-3 text-sm font-bold text-gray-800'>3</div>
-                    </div>
-                    <div class='flex items-center'>
-                        <div class='w-16 font-bold text-gray-700 text-right pr-4'>Dan</div>
-                        <div class='bg-purple-500 h-8 rounded-r-md flex items-center shadow' style='width: 80%;'></div>
-                        <div class='ml-3 text-sm font-bold text-gray-800'>8</div>
-                    </div>
-                    <!-- Axis Line -->
-                    <div class='absolute left-16 top-0 bottom-0 w-1 bg-gray-400 -z-10'></div>
-                </div>
-                <p class='text-xs font-semibold mt-6 text-gray-600 text-center'>X-axis (Horizontal): Number of Books (1 unit = 1 book)</p>
-            </div>
-        `;
-
-        // Shape HTML for Q20
-        const shapeQ20HTML = `
-            <div class='my-3'>
-                <p class='text-sm text-gray-600 mb-2'>Each small square is 1 sq. unit.</p>
-                <div class='inline-grid grid-cols-4 border-2 border-blue-800'>
-                    <div class='w-8 h-8 border border-blue-800 bg-blue-100'></div><div class='w-8 h-8 border border-blue-800 bg-blue-100'></div><div class='w-8 h-8 border border-blue-800 bg-blue-100'></div><div class='w-8 h-8 border border-blue-800 bg-blue-100'></div>
-                    <div class='w-8 h-8 border border-blue-800 bg-blue-100'></div><div class='w-8 h-8 border border-blue-800 bg-blue-100'></div><div class='w-8 h-8 border border-blue-800 bg-blue-100'></div><div class='w-8 h-8 border border-blue-800 bg-blue-100'></div>
-                    <div class='w-8 h-8 border border-blue-800 bg-blue-100'></div><div class='w-8 h-8 border border-blue-800 bg-blue-100'></div><div class='w-8 h-8 border border-blue-800 bg-blue-100'></div><div class='w-8 h-8 border border-blue-800 bg-blue-100'></div>
-                </div>
-            </div>
-        `;
-
-        // --- DATA: 45 Questions (Incorporating all requested variations and new chapters) ---
+        // --- CONFIG ---
+        const DB_KEY = 'cbse_math_db_v2';
+        let studentName = "";
+        let timerInterval;
+        let startTime;
+        
+        // --- CBSE QUESTION BANK (Based on Uploaded Chapter) ---
         const questions = [
-            // Q. I Choose the correct answer (Variations)
-            { type: 'mcq', section: 'Choose the correct answer', text: 'The equivalent fraction for \\(\\frac{15}{25}\\) is:', options: ['\\(\\frac{3}{5}\\)', '\\(\\frac{2}{5}\\)', '\\(\\frac{4}{5}\\)', '\\(\\frac{1}{5}\\)'], answer: 0, strAnswer: '\\(\\frac{3}{5}\\)' }, // Updated Q1
-            { type: 'mcq', section: 'Choose the correct answer', text: '144 is divisible by:', options: ['5', '2', '7', '11'], answer: 1, strAnswer: '2' }, // New Q2
-            { type: 'mcq', section: 'Choose the correct answer', text: 'A decimal number with 4 in the ones place, 8 in the tenths place, and 3 in the hundredths place is:', options: ['4.38', '3.84', '4.83', '8.43'], answer: 2, strAnswer: '4.83' }, // New Q3
-            { type: 'mcq', section: 'Choose the correct answer', text: 'Find the missing denominator: \\(\\frac{3}{5} = \\frac{12}{\\Box}\\)', options: ['15', '18', '20', '25'], answer: 2, strAnswer: '20' }, // New Q4
-            { type: 'mcq', section: 'Choose the correct answer', text: 'A pentagon is a polygon which has ________ sides.', options: ['4', '5', '6', '7'], answer: 1, strAnswer: '5' }, // New Q5
-            { type: 'mcq', section: 'Choose the correct answer', text: 'Rahul drank \\(\\frac{2}{6}\\) liters of water and later drank \\(\\frac{3}{6}\\) liters. How much water did he drink in total?', options: ['\\(\\frac{1}{6}\\) liters', '\\(\\frac{4}{6}\\) liters', '\\(\\frac{6}{6}\\) liters', '\\(\\frac{5}{6}\\) liters'], answer: 3, strAnswer: '\\(\\frac{5}{6}\\) liters' }, // Updated Q6
-            { type: 'mcq', section: 'Choose the correct answer', text: 'A number divisible by both 5 and 10 is:', options: ['15', '25', '40', '55'], answer: 2, strAnswer: '40' }, // New Q7
-            { type: 'mcq', section: 'Choose the correct answer', text: 'The place value of 3 in 7.38 is:', options: ['3 ones', '3 tenths', '3 hundredths', '30'], answer: 1, strAnswer: '3 tenths' }, // New Q8
-            { type: 'mcq', section: 'Choose the correct answer', text: 'The 4th multiple of 8 is:', options: ['12', '24', '32', '40'], answer: 2, strAnswer: '32' }, // New Q9
-            { type: 'mcq', section: 'Choose the correct answer', text: 'The smallest factor of 24 is:', options: ['0', '1', '2', '24'], answer: 1, strAnswer: '1' }, // New Q10
-            
-            // Q. II Fill in the blanks (Variations)
-            { type: 'text', section: 'Fill in the blanks', text: 'If the numerator is greater than the denominator, it is an _________ fraction.', answer: ['improper'], strAnswer: 'improper' }, // New Q11
-            { type: 'text', section: 'Fill in the blanks', text: 'The fractional form of 0.75 is _________ (Write in standard fraction format, e.g., 25/100).', answer: ['75/100', '3/4'], strAnswer: '75/100' }, // Updated Q12
-            { type: 'text', section: 'Fill in the blanks', text: 'If one side of a square park is 12 m, the total length of the boundary required to fence it is _________ m.', answer: ['48'], strAnswer: '48' }, // Updated Q13
-            { type: 'text', section: 'Fill in the blanks', text: 'The distance from the center to any point on the boundary of a circle is called its _________.', answer: ['radius'], strAnswer: 'radius' }, // New Q14
-            { type: 'text', section: 'Fill in the blanks', text: '\\(\\frac{1}{8}\\) of 64 = _________', answer: ['8'], strAnswer: '8' }, // New Q15
-            { type: 'text', section: 'Fill in the blanks', text: 'The decimal number for \\(15\\frac{8}{100}\\) is _________', answer: ['15.08'], strAnswer: '15.08' }, // New Q16
-            { type: 'text', section: 'Fill in the blanks', text: 'The two factors of 17 are 1 and _________', answer: ['17'], strAnswer: '17' }, // New Q17
-            { type: 'text', section: 'Fill in the blanks', text: '\\(\\frac{1}{4}\\) of one hour in minutes is _________ minutes.', answer: ['15'], strAnswer: '15' }, // Updated Q18
-            { type: 'text', section: 'Fill in the blanks', text: 'Compare using <, > or = : \\(\\frac{7}{15} \\_\\_\\_ \\frac{11}{15}\\)', answer: ['<', 'less than', 'less'], strAnswer: '<' }, // New Q19
-            { type: 'text', section: 'Fill in the blanks', text: `Find the area of the given shape: ${shapeQ20HTML} Area = _________ sq. units.`, answer: ['12'], strAnswer: '12' }, // Updated Q20
+            // SECTION A: MCQs & Assertion-Reasoning
+            { 
+                id: 'q1', section: 'Section A: Objective Type (1 Mark each)', 
+                text: "The sum of three odd numbers is always:", 
+                type: 'mcq', opts: ["Even", "Odd", "Prime", "Zero"], 
+                correct: 1, marks: 1,
+                exp: "Odd + Odd = Even. Even + Odd = Odd." 
+            },
+            { 
+                id: 'q2', section: 'Section A', 
+                text: "Which of the following is the 6th number in the Virahāńka-Fibonacci sequence (1, 2, 3, 5...)?", 
+                type: 'mcq', opts: ["8", "10", "13", "21"], 
+                correct: 2, marks: 1,
+                exp: "Sequence: 1, 2, 3, 5, 8, 13..." 
+            },
+            { 
+                id: 'q3', section: 'Section A', 
+                text: "Assertion (A): The sum of two consecutive integers is always odd.<br>Reason (R): Consecutive integers alternate between Even and Odd.", 
+                type: 'mcq', opts: ["Both A and R are true and R is correct explanation of A", "Both A and R are true but R is NOT correct explanation", "A is true but R is false", "A is false"], 
+                correct: 0, marks: 1,
+                exp: "Even + Odd = Odd. This is why consecutive sums are odd." 
+            },
+            { 
+                id: 'q4', section: 'Section A', 
+                text: "In a 3x3 Magic Square using numbers 1-9, the magic sum is:", 
+                type: 'mcq', opts: ["12", "15", "18", "45"], 
+                correct: 1, marks: 1,
+                exp: "Sum of 1-9 is 45. 45 divided by 3 rows = 15." 
+            },
+            { 
+                id: 'q5', section: 'Section A', 
+                text: "Find the value of 'n' if the nth even number is 100.", 
+                type: 'mcq', opts: ["200", "50", "49", "51"], 
+                correct: 1, marks: 1,
+                exp: "Formula for nth even number is 2n. 2n = 100 => n = 50." 
+            },
 
-            // Q. III True or False (Variations)
-            { type: 'mcq', section: 'True or False', text: '\\(\\frac{2}{7}\\), \\(\\frac{3}{7}\\), and \\(\\frac{5}{7}\\) are unlike fractions.', options: ['True', 'False'], answer: 1, strAnswer: 'False' }, // New Q21
-            { type: 'mcq', section: 'True or False', text: 'A triangle is a polygon with 3 line segments.', options: ['True', 'False'], answer: 0, strAnswer: 'True' }, // New Q22
-            { type: 'mcq', section: 'True or False', text: 'In the decimal number 45.89, 9 is in the tenths place.', options: ['True', 'False'], answer: 1, strAnswer: 'False' }, // New Q23
-            { type: 'mcq', section: 'True or False', text: 'The greatest factor of any number is the number itself.', options: ['True', 'False'], answer: 0, strAnswer: 'True' }, // New Q24
-            { type: 'mcq', section: 'True or False', text: '\\(\\frac{7}{100}\\) is equal to 0.7', options: ['True', 'False'], answer: 1, strAnswer: 'False' }, // New Q25
-            { type: 'mcq', section: 'True or False', text: 'To find the length of the wire required to fence a garden, we need to find its area.', options: ['True', 'False'], answer: 1, strAnswer: 'False' }, // Updated Q26
+            // SECTION B: Case-Study (Competency Based)
+            { 
+                id: 'q6', section: 'Section B: Case-Study (4 Marks)', 
+                text: "<strong>Case Study: Angaan's Staircase</strong><br>Angaan wants to climb a staircase. He can take either <strong>1 step</strong> or <strong>2 steps</strong> at a time.<br><br>(i) How many ways can he climb a 3-step staircase?", 
+                type: 'text', keywords: ["3", "three"], minKeys: 1, marks: 1,
+                exp: "3 ways: (1,1,1), (1,2), (2,1)." 
+            },
+            { 
+                id: 'q7', section: 'Section B', 
+                text: "(ii) If the number of ways follows the Virahāńka sequence (1, 2, 3, 5...), how many ways are there to climb 5 steps?", 
+                type: 'text', keywords: ["8", "eight"], minKeys: 1, marks: 1,
+                exp: "Sequence is 1, 2, 3, 5, 8. So 5 steps = 8 ways." 
+            },
+            { 
+                id: 'q8', section: 'Section B', 
+                text: "(iii) This sequence was first discovered by which Indian Scholar?", 
+                type: 'text', keywords: ["virahanka", "pingala"], minKeys: 1, marks: 1,
+                exp: "Virahāńka (c. 700 CE)." 
+            },
+            { 
+                id: 'q9', section: 'Section B', 
+                text: "(iv) What is the parity of the number of ways to climb 6 steps (13 ways)?", 
+                type: 'text', keywords: ["odd"], minKeys: 1, marks: 1,
+                exp: "13 is an Odd number." 
+            },
 
-            // Q. IV Do as directed (Variations)
-            { type: 'text', section: 'Do as directed', text: 'Find \\(\\frac{1}{5}\\) of 45 =', answer: ['9'], strAnswer: '9' }, // New Q27
-            { type: 'mcq', section: 'Do as directed', text: 'Is 315 divisible by 5?', options: ['Yes', 'No'], answer: 0, strAnswer: 'Yes' }, // New Q28
-            { type: 'text', section: 'Do as directed', text: 'Express \\(\\frac{9}{100}\\) as a decimal.', answer: ['0.09'], strAnswer: '0.09' }, // New Q29
-            { type: 'text', section: 'Do as directed', text: 'Express 8.03 as a fraction (Use format like 405/100).', answer: ['803/100'], strAnswer: '803/100' }, // Updated Q30
-            { type: 'text', section: 'Do as directed', text: 'Write the next decimal number in the pattern: 2.45, 2.46, _________', answer: ['2.47'], strAnswer: '2.47' }, // New Q31
-            { type: 'text', section: 'Do as directed', text: 'Amit has \\(\\frac{7}{8}\\) of a pizza. He eats \\(\\frac{2}{8}\\). What fraction of the pizza is left? (Write fraction as a/b)', answer: ['5/8'], strAnswer: '5/8' }, // New Q32
-            { type: 'text', section: 'Do as directed', text: 'Find the perimeter of a triangle with sides measuring 8cm, 7cm, and 5cm. (Enter number only)', answer: ['20'], strAnswer: '20' }, // New Q33
-            
-            // NEW GEOMETRY QUESTIONS
-            { type: 'text', section: 'Geometry', text: 'A closed figure made of straight lines is called a _________.', answer: ['polygon'], strAnswer: 'polygon' }, // Updated Q34
-            { type: 'mcq', section: 'Geometry', text: 'The diameter of a circle is _________ its radius.', options: ['half of', 'double', 'equal to', 'one-third of'], answer: 1, strAnswer: 'double' },
-            { type: 'text', section: 'Geometry', text: 'If the radius of a circle is 4 cm, what is the length of its diameter? (Enter number only)', answer: ['8'], strAnswer: '8' },
-            { type: 'mcq', section: 'Geometry', text: 'Which of the following shapes is NOT considered a polygon?', options: ['Square', 'Triangle', 'Circle', 'Rectangle'], answer: 2, strAnswer: 'Circle' },
+            // SECTION C: Short Answer
+            { 
+                id: 'q10', section: 'Section C: Short Answer (3 Marks each)', 
+                text: "Two siblings, Martin and Maria, were born exactly one year apart. Explain why the sum of their ages can NEVER be 112.", 
+                type: 'text', keywords: ["consecutive", "odd", "even"], minKeys: 1, marks: 3,
+                exp: "Ages are consecutive (one Even, one Odd). Sum of Even + Odd is always ODD. 112 is Even, so it's impossible." 
+            },
+            { 
+                id: 'q11', section: 'Section C', 
+                text: "Solve the Cryptarithm: <strong>K2 + K2 = HMM</strong>. Find the values of K, H, and M.", 
+                type: 'text', keywords: ["k=7", "m=4", "h=1"], minKeys: 2, marks: 3,
+                exp: "2+2=4 so M=4. Equation becomes K2+K2=H44. 72+72=144. So K=7, H=1, M=4." 
+            },
 
-            // DATA HANDLING - PICTOGRAPH
-            { type: 'mcq', section: 'Data Handling - Pictograph', text: `${dicePictographHTML} <br> <strong>Q: Based on the pictograph above, which number appeared the maximum number of times?</strong>`, options: ['Number 2', 'Number 4', 'Number 5', 'Number 6'], answer: 2, strAnswer: 'Number 5' },
-            { type: 'text', section: 'Data Handling - Pictograph', text: `${dicePictographHTML} <br> <strong>Q: According to the pictograph, how many times did the number '4' appear?</strong> (Enter a number)`, answer: ['8'], strAnswer: '8' },
-            { type: 'mcq', section: 'Data Handling - Pictograph', text: `${dicePictographHTML} <br> <strong>Q: Which two numbers appeared the exact same number of times?</strong>`, options: ['1 and 6', '2 and 5', '3 and 4', '1 and 3'], answer: 0, strAnswer: '1 and 6' },
-            { type: 'text', section: 'Data Handling - Pictograph', text: `${dicePictographHTML} <br> <strong>Q: How many total times was the dice rolled altogether?</strong> (Calculate the total across all numbers)`, answer: ['40'], strAnswer: '40' },
-            
-            // NEW DATA HANDLING - BAR GRAPH
-            { type: 'mcq', section: 'Data Handling - Bar Graph', text: `${booksBarGraphHTML} <br> <strong>Q: According to the Bar Graph, who read the maximum number of books?</strong>`, options: ['Ali', 'Ben', 'Cara', 'Dan'], answer: 3, strAnswer: 'Dan' },
-            { type: 'text', section: 'Data Handling - Bar Graph', text: `${booksBarGraphHTML} <br> <strong>Q: How many books did Ben and Cara read altogether?</strong> (Enter a number)`, answer: ['9'], strAnswer: '9 (Ben: 6 + Cara: 3)' },
-            { type: 'text', section: 'Data Handling - Bar Graph', text: `${booksBarGraphHTML} <br> <strong>Q: How many more books did Dan read compared to Ali?</strong> (Enter a number)`, answer: ['4'], strAnswer: '4 (Dan: 8 - Ali: 4)' },
-            { type: 'text', section: 'Data Handling - Bar Graph', text: `${booksBarGraphHTML} <br> <strong>Q: What is the total number of books read by all four students?</strong>`, answer: ['21'], strAnswer: '21' }
+            // SECTION D: Long Answer
+            { 
+                id: 'q12', section: 'Section D: Long Answer (5 Marks)', 
+                text: "Construct a Magic Square using numbers 1 to 9. Explain why the number 5 MUST be in the center.", 
+                type: 'text', keywords: ["average", "median", "pairs", "15"], minKeys: 1, marks: 5,
+                exp: "The center number participates in 4 sums (row, col, 2 diagonals). Only the median (5) balances the small and large numbers to sum to 15 in all directions." 
+            }
         ];
 
-        // Ensure the dynamic total reflects correctly
-        document.getElementById('total-qs-label').innerText = questions.length;
-
-        // --- STATE MANAGEMENT ---
-        let currentQuestion = 0;
-        let totalTime = 60 * 60; // 60 minutes
-        let timerInterval;
-        
-        let answers = new Array(questions.length).fill(null);
-        let status = new Array(questions.length).fill('not-visited'); 
-
-        // --- DOM ELEMENTS ---
-        const ui = {
-            screens: {
-                instructions: document.getElementById('screen-instructions'),
-                exam: document.getElementById('screen-exam'),
-                results: document.getElementById('screen-results')
-            },
-            checkbox: document.getElementById('agree-checkbox'),
-            btnStart: document.getElementById('btn-start'),
-            timer: document.getElementById('timer'),
-            timerContainer: document.getElementById('header-timer-container'),
-            qNumber: document.getElementById('q-number'),
-            qText: document.getElementById('q-text'),
-            qOptions: document.getElementById('q-options'),
-            sectionTitle: document.getElementById('section-title'),
-            paletteGrid: document.getElementById('palette-grid'),
-            modal: document.getElementById('confirm-modal')
-        };
-
-        // --- FUNCTIONS ---
-        function toggleStartButton() {
-            if (ui.checkbox.checked) {
-                ui.btnStart.disabled = false;
-                ui.btnStart.classList.replace('bg-gray-400', 'bg-blue-600');
-                ui.btnStart.classList.replace('cursor-not-allowed', 'hover:bg-blue-700');
-            } else {
-                ui.btnStart.disabled = true;
-                ui.btnStart.classList.replace('bg-blue-600', 'bg-gray-400');
-                ui.btnStart.classList.replace('hover:bg-blue-700', 'cursor-not-allowed');
-            }
+        // --- CORE FUNCTIONS ---
+        function initCamera() {
+            navigator.mediaDevices.getUserMedia({ video: true })
+            .then(s => {
+                document.getElementById('webcam').srcObject = s;
+                document.getElementById('webcam').classList.remove('hidden');
+                document.getElementById('cam-sim').classList.add('hidden');
+            }).catch(e => console.log("Cam Blocked - Using Simulation"));
         }
 
-        function startTimer() {
-            ui.timerContainer.classList.remove('hidden');
-            timerInterval = setInterval(() => {
-                totalTime--;
-                const m = Math.floor(totalTime / 60).toString().padStart(2, '0');
-                const s = (totalTime % 60).toString().padStart(2, '0');
-                ui.timer.innerText = `${m}:${s}`;
+        function startTest() {
+            const name = document.getElementById('student-name').value.trim();
+            if(!name) { alert("Please enter your name."); return; }
+            studentName = name;
 
-                if(totalTime <= 300) { // 5 minutes warning
-                    ui.timer.classList.replace('text-yellow-400', 'text-red-400');
-                    ui.timer.classList.add('animate-pulse');
-                }
+            document.getElementById('page-login').classList.add('hidden-page');
+            document.getElementById('page-test').classList.remove('hidden-page');
+            document.getElementById('timer-box').classList.remove('hidden');
 
-                if(totalTime <= 0) {
-                    clearInterval(timerInterval);
-                    finishExam();
-                }
-            }, 1000);
-        }
-
-        function startExam() {
-            examActive = true;
-            returnToFullscreen();
-
-            ui.screens.instructions.classList.add('hidden');
-            ui.screens.exam.classList.remove('hidden');
-            status[0] = 'not-answered'; 
-            buildPalette();
-            renderQuestion(0);
+            renderPaper();
+            initCamera();
             startTimer();
         }
 
-        function buildPalette() {
-            ui.paletteGrid.innerHTML = '';
-            for (let i = 0; i < questions.length; i++) {
-                const btn = document.createElement('button');
-                btn.innerText = i + 1;
-                btn.className = `w-12 h-10 rounded font-bold transition-all ${getPaletteClass(status[i])} hover:opacity-80`;
-                if (i === currentQuestion) {
-                    btn.classList.add('ring-2', 'ring-offset-1', 'ring-blue-800');
+        function startTimer() {
+            let t = 3600;
+            startTime = new Date();
+            timerInterval = setInterval(() => {
+                t--;
+                const m = Math.floor(t/60);
+                const s = t%60;
+                document.getElementById('timer-display').innerText = `${m}:${s<10?'0':''}${s}`;
+                if(t<=0) submitTest();
+            }, 1000);
+        }
+
+        function renderPaper() {
+            const container = document.getElementById('questions-wrapper');
+            let currentSection = "";
+            let html = "";
+
+            questions.forEach((q, idx) => {
+                if(q.section !== currentSection) {
+                    currentSection = q.section;
+                    html += `<div class="section-header">${currentSection}</div>`;
                 }
-                btn.onclick = () => jumpToQuestion(i);
-                ui.paletteGrid.appendChild(btn);
-            }
-        }
+                
+                let inputHtml = "";
+                if(q.type === 'mcq') {
+                    inputHtml = `<div class="mt-3 space-y-2">
+                        ${q.opts.map((opt, i) => `
+                            <label class="flex items-center p-3 border border-gray-200 rounded hover:bg-blue-50 cursor-pointer">
+                                <input type="radio" name="${q.id}" value="${i}" class="mr-3 w-4 h-4 text-blue-600">
+                                <span class="text-sm text-gray-700">${opt}</span>
+                            </label>`).join('')}
+                    </div>`;
+                } else {
+                    inputHtml = `<textarea name="${q.id}" rows="3" class="w-full mt-3 p-3 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 bg-gray-50 text-sm" placeholder="Type your answer..."></textarea>`;
+                }
 
-        function getPaletteClass(s) {
-            switch(s) {
-                case 'not-visited': return 'status-not-visited';
-                case 'not-answered': return 'status-not-answered';
-                case 'answered': return 'status-answered';
-                case 'review': return 'status-review';
-                default: return 'status-not-visited';
-            }
-        }
-
-        function renderQuestion(index) {
-            currentQuestion = index;
-            const q = questions[index];
-            
-            ui.sectionTitle.innerText = q.section;
-            ui.qNumber.innerText = index + 1;
-            ui.qText.innerHTML = q.text;
-            ui.qOptions.innerHTML = '';
-
-            if (q.type === 'mcq') {
-                q.options.forEach((opt, idx) => {
-                    const isChecked = answers[index] === idx ? 'checked' : '';
-                    const html = `
-                        <label class="flex items-center gap-3 p-3 border border-gray-300 rounded-lg cursor-pointer option-label transition-colors">
-                            <input type="radio" name="q_opt" value="${idx}" class="w-4 h-4 text-blue-600 accent-blue-600" ${isChecked} onchange="captureAnswer()">
-                            <span class="text-gray-700 text-lg math-text">${opt}</span>
-                        </label>
-                    `;
-                    ui.qOptions.innerHTML += html;
-                });
-            } else if (q.type === 'text') {
-                const val = answers[index] || '';
-                ui.qOptions.innerHTML = `
-                    <div class="mt-4">
-                        <input type="text" id="q_text_input" value="${val}" placeholder="Type your answer here..." class="w-full max-w-sm border-2 border-gray-300 rounded-lg px-4 py-3 text-lg focus:outline-none focus:border-blue-600 transition-colors" onkeyup="captureAnswer()">
+                html += `
+                    <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100 mb-6">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="font-bold text-gray-800">Q${idx+1}</span>
+                            <span class="text-xs font-bold text-gray-400 bg-gray-100 px-2 py-1 rounded">${q.marks} Marks</span>
+                        </div>
+                        <p class="text-gray-800 text-base">${q.text}</p>
+                        ${inputHtml}
                     </div>
                 `;
-            }
-
-            if (window.MathJax) {
-                MathJax.typesetPromise([ui.qText, ui.qOptions]).catch((err) => console.log(err.message));
-            }
-
-            buildPalette(); 
+            });
+            container.innerHTML = html;
         }
 
-        function captureAnswer() {
-            const q = questions[currentQuestion];
-            if (q.type === 'mcq') {
-                const selected = document.querySelector('input[name="q_opt"]:checked');
-                if (selected) answers[currentQuestion] = parseInt(selected.value);
-            } else if (q.type === 'text') {
-                const input = document.getElementById('q_text_input');
-                if (input) {
-                    const val = input.value.trim();
-                    answers[currentQuestion] = val === '' ? null : val;
-                }
+        // --- UPDATED GRADING LOGIC ---
+        function checkKeyword(userText, keyword) {
+            const u = userText.toLowerCase();
+            const k = keyword.toLowerCase();
+            
+            // If keyword contains non-letters (like numbers or symbols e.g., "k=7"), 
+            // we use strict inclusion because word boundaries \b fail on symbols like =
+            if (/[^a-z]/.test(k)) {
+                return u.includes(k);
             }
             
-            if (status[currentQuestion] !== 'review') {
-                status[currentQuestion] = answers[currentQuestion] !== null ? 'answered' : 'not-answered';
-            }
-            buildPalette();
+            // For standard words, we use Regex Word Boundaries (\b) to ensure
+            // "odd" does NOT match "toddler" or "goddess".
+            // It MUST be a distinct word in the sentence.
+            const regex = new RegExp(`\\b${k}\\b`, 'i');
+            return regex.test(u);
         }
 
-        function saveAndNext() {
-            captureAnswer();
-            status[currentQuestion] = answers[currentQuestion] !== null ? 'answered' : 'not-answered';
-            moveToNext();
-        }
-
-        function markForReview() {
-            captureAnswer();
-            status[currentQuestion] = 'review';
-            moveToNext();
-        }
-
-        function clearResponse() {
-            answers[currentQuestion] = null;
-            status[currentQuestion] = 'not-answered';
-            renderQuestion(currentQuestion);
-        }
-
-        function moveToNext() {
-            if (currentQuestion < questions.length - 1) {
-                const nextQ = currentQuestion + 1;
-                if (status[nextQ] === 'not-visited') status[nextQ] = 'not-answered';
-                renderQuestion(nextQ);
-            } else {
-                buildPalette();
-                alert("You have reached the end of the question paper. Please review your answers or submit.");
-            }
-        }
-
-        function jumpToQuestion(index) {
-            captureAnswer();
-            if (status[index] === 'not-visited') status[index] = 'not-answered';
-            renderQuestion(index);
-        }
-
-        function confirmSubmit() {
-            captureAnswer(); 
-            ui.modal.classList.remove('hidden');
-        }
-
-        function finishExam() {
-            examActive = false; // Turn off enforcement so we don't trigger the warning overlay
-            exitFullscreen(); // Automatically exit full screen
-            
+        function submitTest() {
             clearInterval(timerInterval);
-            ui.modal.classList.add('hidden');
-            ui.screens.exam.classList.add('hidden');
-            ui.screens.results.classList.remove('hidden');
-            ui.timerContainer.classList.add('hidden');
-            evaluateTest();
-        }
-
-        function evaluateTest() {
+            const form = new FormData(document.getElementById('page-test'));
             let score = 0;
-            const tbody = document.getElementById('result-tbody');
-            tbody.innerHTML = '';
+            let max = 0;
+            let solutions = [];
 
-            questions.forEach((q, i) => {
-                const userAns = answers[i];
-                let isCorrect = false;
-                let displayUserAns = '-';
+            questions.forEach(q => {
+                max += q.marks;
+                let earned = 0;
+                let userVal = "";
 
-                if (q.type === 'mcq') {
-                    if (userAns !== null) {
-                        isCorrect = userAns === q.answer;
-                        displayUserAns = q.options[userAns];
-                    }
-                } else if (q.type === 'text') {
-                    if (userAns !== null) {
-                        displayUserAns = userAns;
-                        isCorrect = q.answer.some(a => a.toLowerCase() === userAns.toLowerCase());
-                    }
-                }
-
-                if (isCorrect) score++;
-
-                let statusBadge = '';
-                if (userAns === null) {
-                    statusBadge = '<span class="px-2 py-1 bg-gray-200 text-gray-700 rounded text-xs font-bold">Unattempted</span>';
-                } else if (isCorrect) {
-                    statusBadge = '<span class="px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-bold">Correct</span>';
+                if(q.type === 'mcq') {
+                    const val = form.get(q.id);
+                    userVal = val ? q.opts[val] : "No Answer";
+                    if(val && parseInt(val) === q.correct) earned = q.marks;
                 } else {
-                    statusBadge = '<span class="px-2 py-1 bg-red-100 text-red-700 rounded text-xs font-bold">Incorrect</span>';
+                    userVal = (form.get(q.id) || "").trim();
+                    if(q.keywords) {
+                        // Use the new checkKeyword function
+                        const hits = q.keywords.filter(k => checkKeyword(userVal, k));
+                        
+                        if(hits.length >= q.minKeys) earned = q.marks;
+                        else if(hits.length > 0) earned = Math.ceil(q.marks/2);
+                    }
                 }
-
-                const tr = document.createElement('tr');
-                tr.className = "border-b border-gray-200 hover:bg-gray-50";
-                tr.innerHTML = `
-                    <td class="p-3 font-bold text-gray-700">${i + 1}</td>
-                    <td class="p-3">${statusBadge}</td>
-                    <td class="p-3 text-gray-800 math-text">${displayUserAns}</td>
-                    <td class="p-3 text-green-700 font-bold math-text">${q.strAnswer}</td>
-                `;
-                tbody.appendChild(tr);
+                score += earned;
+                solutions.push({ q: q.text, u: userVal, e: q.exp, s: earned, m: q.marks });
             });
 
-            document.getElementById('final-score').innerText = score;
-            if (window.MathJax) {
-                MathJax.typesetPromise([tbody]).catch((err) => console.log(err.message));
+            // Save Data
+            const code = `CBSE-${score}-${Math.floor(Math.random()*1000)}`;
+            const payload = {
+                name: studentName, score, max, code, 
+                time: new Date().toLocaleTimeString(),
+                timestamp: Date.now()
+            };
+            
+            const db = JSON.parse(localStorage.getItem(DB_KEY) || '[]');
+            db.push(payload);
+            localStorage.setItem(DB_KEY, JSON.stringify(db));
+
+            // Show Result
+            document.getElementById('page-test').classList.add('hidden-page');
+            document.getElementById('timer-box').classList.add('hidden');
+            document.getElementById('page-result').classList.remove('hidden-page');
+            document.getElementById('res-score').innerText = score;
+            document.getElementById('res-code').innerText = code;
+            
+            renderSolutions(solutions);
+            window.scrollTo(0,0);
+        }
+
+        function renderSolutions(data) {
+            const area = document.getElementById('solutions-area');
+            area.innerHTML = data.map((d, i) => {
+                const isCorrect = d.s === d.m;
+                const isZero = d.s === 0;
+                // Use Green for full marks, Red for zero, Yellow for partial
+                const borderColor = isCorrect ? 'border-green-500' : (isZero ? 'border-red-500' : 'border-yellow-500');
+                const bgColor = isCorrect ? 'bg-green-50' : (isZero ? 'bg-red-50' : 'bg-yellow-50');
+                const badgeColor = isCorrect ? 'bg-green-100 text-green-800' : (isZero ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800');
+                
+                return `
+                <div class="p-4 border-l-4 rounded-r shadow-sm ${borderColor} ${bgColor} text-left text-sm mb-4">
+                    <div class="flex justify-between items-start mb-2">
+                        <div class="font-bold text-gray-900 text-base w-full pr-4">Q${i+1}. ${d.q}</div>
+                        <span class="text-xs font-bold ${badgeColor} px-2 py-1 rounded border border-opacity-20 shadow-sm whitespace-nowrap flex-shrink-0">
+                            ${d.s} / ${d.m} Marks
+                        </span>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 gap-2 mt-2">
+                        <!-- User Answer -->
+                        <div class="bg-white/80 p-2 rounded border border-gray-200">
+                            <span class="text-[10px] font-bold text-gray-500 block uppercase tracking-wider mb-1">Your Response</span>
+                            <div class="font-medium ${isCorrect ? 'text-green-700' : 'text-red-700'}">
+                                ${d.u || "<span class='italic text-gray-400'>No Answer provided</span>"}
+                            </div>
+                        </div>
+                        
+                        <!-- Expected Answer -->
+                        <div class="bg-white/80 p-2 rounded border border-gray-200">
+                            <span class="text-[10px] font-bold text-gray-500 block uppercase tracking-wider mb-1">Correct Answer / Explanation</span>
+                            <div class="text-gray-800">${d.e}</div>
+                        </div>
+                    </div>
+                </div>
+                `;
+            }).join('');
+        }
+
+        function toggleSolutions() {
+            const el = document.getElementById('solutions-area');
+            el.classList.toggle('hidden');
+        }
+        
+        function copyCode(el) {
+            // Robust Copy
+            const text = el.innerText.replace("Code: ", "");
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            document.body.appendChild(ta);
+            ta.select();
+            try { document.execCommand('copy'); alert("Code Copied!"); } 
+            catch(e) { prompt("Copy Code:", text); }
+            document.body.removeChild(ta);
+        }
+
+        // --- ADMIN ---
+        function adminLogin() {
+            if(prompt("Admin Password") === "admin123") {
+                document.querySelectorAll('main > div').forEach(d => d.classList.add('hidden-page'));
+                document.getElementById('page-admin').classList.remove('hidden-page');
+                document.getElementById('admin-logout-btn').classList.remove('hidden');
+                
+                loadAdmin();
+                setInterval(loadAdmin, 2000); // Live Sync
             }
+        }
+
+        function loadAdmin() {
+            const db = JSON.parse(localStorage.getItem(DB_KEY) || '[]');
+            const tbody = document.getElementById('admin-tbody');
+            const empty = document.getElementById('admin-empty');
+
+            if(db.length === 0) { empty.style.display = 'block'; tbody.innerHTML = ''; return; }
+            
+            empty.style.display = 'none';
+            if(tbody.childElementCount === db.length) return; // No change
+
+            db.sort((a,b) => b.timestamp - a.timestamp);
+            tbody.innerHTML = db.map((d, i) => `
+                <tr class="border-b hover:bg-gray-50 ${i===0?'new-row':''}">
+                    <td class="p-4">${d.time}</td>
+                    <td class="p-4 font-bold">${d.name}</td>
+                    <td class="p-4 text-center"><span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs font-bold">${d.score}/${d.max}</span></td>
+                    <td class="p-4 text-right font-mono">${d.code}</td>
+                </tr>
+            `).join('');
+        }
+        
+        function manualFetch() {
+            const code = document.getElementById('manual-code').value.trim();
+            const parts = code.split('-');
+            if(parts.length >= 2) alert(`Decoded Score: ${parts[1]}/20`);
+            else alert("Invalid Code");
         }
     </script>
 </body>
